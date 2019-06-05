@@ -5,6 +5,8 @@ option solver cplex;
 param Num_Fragments := 5;									
 param Fragment_Size {i in 1..Num_Fragments} := Uniform(0,100);						
 param Num_Queries := 9; #nope menge an columns
+param Queries {f in 1..Num_Fragments, q in 1..Num_Queries} := round(Uniform(0,1));
+display Queries;
 param Query_Frequency {i in 1..Num_Queries} := Uniform(0,100);
 param Query_Cost {i in 1..Num_Queries} := Uniform(0,100);
 param Workload {i in 1..Num_Queries} := Query_Cost[i] *  Query_Frequency[i];
