@@ -22,4 +22,4 @@ subject to NB1: sum{Q in 1..Num_Queries, N in 1..Num_Nodes} Runnable[Q,N] >= 0;
 
 subject to NB2: sum{Q in 1..Num_Queries, N in 1..Num_Nodes} Workshare[Q,N] = 1;
 
-subject to NB3 {N in 1..Num_Nodes): (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
+subject to NB3 {N in 1..Num_Nodes}: (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
