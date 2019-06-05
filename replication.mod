@@ -18,8 +18,10 @@ var Workshare {query in 1..Num_Queries, nodes in 1..Num_Nodes};
 
 minimize LP: sum{F in 1..Num_Fragments, N in 1..Num_Nodes} (Location[F, N] * Fragment_Size[F]);
 
-subject to NB1: sum{Q in 1..Num_Queries, N in 1..Num_Nodes} Runnable[Q,N] >= 0;
+subject to NB1 {Q in 1..Num_Queries}: sum{ N in 1..Num_Nodes} Runnable[Q,N] >= 1; #query mindestens auf einem system ausfuerbar
 
-subject to NB2: sum{Q in 1..Num_Queries, N in 1..Num_Nodes} Workshare[Q,N] = 1;
+subject to NB2 {Q in 1..Num_Queries}: sum{N in 1..Num_Nodes} Workshare[Q,N] = 1;
 
 subject to NB3 {N in 1..Num_Nodes}: (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
+
+display LP, Location;
