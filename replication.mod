@@ -24,4 +24,6 @@ subject to NB2 {Q in 1..Num_Queries}: sum{N in 1..Num_Nodes} Workshare[Q,N] = 1;
 
 subject to NB3 {N in 1..Num_Nodes}: (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
 
+subject to NBRainer1{Q in 1..Num_Queries, N in 1..Num_Nodes}: (sum{F in 1..Num_Fragments} F) * Runnable[Q,N] <= sum{F in 1..Num_Fragments} Location[F,N];
+
 display LP, Location;
