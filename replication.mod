@@ -10,9 +10,10 @@ display Queries;
 param Query_Frequency {i in 1..Num_Queries} := Uniform(0,100);
 param Query_Cost {i in 1..Num_Queries} := Uniform(0,100);
 param Workload {i in 1..Num_Queries} := Query_Cost[i] *  Query_Frequency[i];
-param Num_Nodes := 4;
+param Total_Worload := sum {Q in 1..Num_Queries} Workload[Q];
+param Num_Nodes := 7;
 
-var Location {fragment in 1..Num_Fragments, nodes in 1..Num_Nodes}  binary;
+var Location {fragment in 1..Num_Fragments, nodes in 1..Num_Nodes} binary;
 var Runnable {query in 1..Num_Queries, nodes in 1..Num_Nodes}  binary; 
 var Workshare {query in 1..Num_Queries, nodes in 1..Num_Nodes} >= 0; 
 
@@ -23,13 +24,18 @@ subject to NB1 {Q in 1..Num_Queries}: sum{N in 1..Num_Nodes} Runnable[Q,N] >= 1;
 
 subject to NB2 {Q in 1..Num_Queries}: sum{N in 1..Num_Nodes} Workshare[Q,N] = 1;
 
-subject to NB3 {N in 1..Num_Nodes}: (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
+#subject to NB3 {N in 1..Num_Nodes}: (sum{Q in 1..Num_Queries} Workshare[Q,N]) / Num_Queries = 1 / Num_Nodes;
 
 subject to NB4 {N in 1..Num_Nodes, Q in 1..Num_Queries}: 
 	Runnable[Q,N] * sum{f in 1..Num_Fragments} Queries[f, Q] <= sum{f in 1..Num_Fragments} Location[f, N] * Queries[f, Q];
 
 subject to NB5 {N in 1..Num_Nodes, Q in 1..Num_Queries}:
 	Workshare[Q, N] <= Runnable[Q, N];
+	
+subject to NB6 {N in 1..Num_Nodes}: sum{q in 1..Num_Queries} (Workshare[q, N] * Workload[q]) / Total_Worload = 1/Num_Nodes; 
 
 solve;
-display LP, Location, Runnable, Workshare;
+display LP; 
+display Location;
+display Runnable;
+display Workshare; 
