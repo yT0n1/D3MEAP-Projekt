@@ -13,5 +13,5 @@ param Num_Nodes := 4;
 var Location {fragment in 1..Num_Fragments, nodes in 1..Num_Nodes}  binary;
 var Runnable {query in 1..Num_Queries, nodes in 1..Num_Nodes}  binary; 
 var Workshare {query in 1..Num_Queries, nodes in 1..Num_Nodes}; 
- 
-	
+
+subject to HB: sum{F in 1..Num_Fragments, N in 1..Num_Nodes} (Location[F, N] * Fragment_Size[F])
