@@ -2,7 +2,7 @@ reset;
 
 option solver cplex;
 		
-param Num_Fragments := 5;									
+param Num_Fragments := 10;									
 param Fragment_Size {i in 1..Num_Fragments} := Uniform(0,100);						
 param Num_Queries := 9; #nope menge an columns
 param Queries {f in 1..Num_Fragments, q in 1..Num_Queries} := round(Uniform(0,1));
@@ -11,7 +11,7 @@ param Query_Frequency {i in 1..Num_Queries} := Uniform(0,100);
 param Query_Cost {i in 1..Num_Queries} := Uniform(0,100);
 param Workload {i in 1..Num_Queries} := Query_Cost[i] *  Query_Frequency[i];
 param Total_Worload := sum {Q in 1..Num_Queries} Workload[Q];
-param Num_Nodes := 7;
+param Num_Nodes := 4;
 
 var Location {fragment in 1..Num_Fragments, nodes in 1..Num_Nodes} binary;
 var Runnable {query in 1..Num_Queries, nodes in 1..Num_Nodes}  binary; 
@@ -35,6 +35,17 @@ subject to NB5 {N in 1..Num_Nodes, Q in 1..Num_Queries}:
 subject to NB6 {N in 1..Num_Nodes}: sum{q in 1..Num_Queries} (Workshare[q, N] * Workload[q]) / Total_Worload = 1/Num_Nodes; 
 
 solve;
+
+param work {n in 1..Num_Nodes};  
+
+solve;
+
+for { n in 1..Num_Nodes} {
+	let work[n] := sum{q in 1..Num_Queries} Workshare[q, n] * Workload[q] / Total_Worload;
+}
+
+
+display work;
 display LP; 
 display Location;
 display Runnable;
