@@ -4,7 +4,7 @@ option solver cplex;
 		
 param Num_Fragments := 10;									
 param Fragment_Size {i in 1..Num_Fragments} := Uniform(0,100);						
-param Num_Queries := 9; #nope menge an columns
+param Num_Queries := 9;
 param Queries {f in 1..Num_Fragments, q in 1..Num_Queries} := round(Uniform(0,1));
 display Queries;
 param Query_Frequency {i in 1..Num_Queries} := Uniform(0,100);
@@ -54,43 +54,43 @@ display Workshare;
 
 
 #### second split
+#fix Workshare;
+#fix Runnable; 
+#fix Location;
+param this_node := 1;
+# we reduce the number of queries which is critical to reduce complexity, however, we also need to give new names/numbers here
+param Num_Queries_on_Node default 0; 
+for {Q in 1..Num_Queries} let Num_Queries_on_Node :=  Num_Queries_on_Node + Runnable[Q, this_node];
+display Num_Queries_on_Node;
+set node_queries default {};
+for {q in 1..Num_Queries} let node_queries := if Runnable[q, this_node] then node_queries union {q} else node_queries;
+display node_queries;
 
-	param this_node := 1;
-	# we reduce the number of queries which is critical to reduce complexity, however, we also need to give new names/numbers here
-	param Num_Queries_on_Node default 0; 
-	for {Q in 1..Num_Queries} let Num_Queries_on_Node :=  Num_Queries_on_Node + Runnable[Q, this_node];
-	display Num_Queries_on_Node;
+
+var Location_Node {fragment in 1..Num_Fragments, nodes in 1..Servers_per_Node} binary;
+var Runnable_Node {query in node_queries, nodes in 1..Servers_per_Node}  binary; 
+var Workshare_Node {query in node_queries, nodes in 1..Servers_per_Node} >= 0; 
+
+minimize LP2: sum{F in 1..Num_Fragments, N in 1..Servers_per_Node} (Location_Node[F, N] * Fragment_Size[F]);
+
+#jede uebrig gebliebene query mindestens auf einem system ausfuerbar
+subject to NB1_1 {Q in node_queries}: sum{N in 1..Servers_per_Node} Runnable_Node[Q,N] >= 1;
+
+#Todo: workshare needs to be reconfigurated?
+subject to NB2_1 {Q in node_queries}: sum{N in 1..Servers_per_Node} Workshare_Node[Q,N] = 1;
+
+
+subject to NB4_1 {N in 1..Servers_per_Node, Q in node_queries}: 
+	Runnable_Node[Q,N] * sum{f in 1..Num_Fragments} Queries[f, Q] <= sum{f in 1..Num_Fragments} Location_Node[f, N] * Queries[f, Q];
+
+subject to NB5_1 {N in 1..Servers_per_Node, Q in node_queries}:
+	Workshare_Node[Q, N] <= Runnable_Node[Q, N];
 	
-	param Mapping {n in 1..Num_Queries};
-	for {q in 2..Num_Queries_on_Node} {
-		
-		for {q_old in 1..Num_Queries}{
-			let Mapping[1]  := if Runnable[q_old, this_node] then q_old;
-			let Mapping[q]  := if Runnable[q_old, this_node]  and q_old < Mapping[q-1] then q_old;
-		}
-	}
-		
-	display Mapping;
+#subject to NB6_1 {N in 1..Servers_per_Node}: sum{q in node_queries} (Workshare_Node[q, N] * Workload[q] * Workshare[q,this_node]) / (Total_Worload/Num_Nodes) = 1/Servers_per_Node; 
+objective LP2;
+solve;
+display LP2; 
+display Location_Node;
+display Runnable_Node;
+display Workshare_Node; 
 	
-	var Location_Node {fragment in 1..Num_Fragments, nodes in 1..Servers_per_Node} binary;
-	var Runnable_Node {query in 1..Num_Queries_on_Node, nodes in 1..Servers_per_Node}  binary; 
-	var Workshare_Node {query in 1..Num_Queries_on_Node, nodes in 1..Servers_per_Node} >= 0; 
-	
-	minimize LP2: sum{F in 1..Num_Fragments, N in 1..Servers_per_Node} (Location_Node[F, N] * Fragment_Size[F]);
-	
-	#jede uebrig gebliebene query mindestens auf einem system ausfuerbar
-	subject to NB1_1 {Q in 1..Num_Queries_on_Node}: sum{N in 1..Servers_per_Node} Runnable_Node[Q,N] >= 1;
-	
-	#Todo: workshare needs to be reconfigurated?
-	subject to NB2_1 {Q in 1..Num_Queries_on_Node}: sum{N in 1..Servers_per_Node} Workshare_Node[Q,N] = 1;
-	
-	
-	subject to NB4_1 {N in 1..Servers_per_Node, Q in 1..Num_Queries_on_Node}: 
-		Runnable_Node[Q,N] * sum{f in 1..Num_Fragments} Queries[f, Mapping[Q]] <= sum{f in 1..Num_Fragments} Location_Node[f, N] * Queries[f, Mapping[Q]];
-	
-	subject to NB5_1 {N in 1..Servers_per_Node, Q in 1..Num_Queries_on_Node}:
-		Workshare_Node[Q, N] <= Runnable_Node[Q, N];
-		
-	subject to NB6_1 {N in 1..Servers_per_Node}: sum{q in 1..Num_Queries_on_Node} (Workshare_Node[q, N] * Workload[Mapping[q]] * Workshare[Mapping[q],this_node]) / (Total_Worload/Num_Nodes) = 1/Servers_per_Node; 
-	objective LP2;
-	solve;
