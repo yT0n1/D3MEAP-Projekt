@@ -62,12 +62,13 @@ display Workshare;
 	display Num_Queries_on_Node;
 	
 	param Mapping {n in 1..Num_Queries};
-	for {q in 1..Num_Queries_on_Node} {
+	for {q in 2..Num_Queries_on_Node} {
 		
-		for {q_old in 2..Num_Queries}{
-			let Mapping[1]  := if Runnable[q_old, this_node] then q_old};
-			let Mapping[q]  := if Runnable[q_old, this_node]  and q_old < Mapping[q-1] then q_old};
+		for {q_old in 1..Num_Queries}{
+			let Mapping[1]  := if Runnable[q_old, this_node] then q_old;
+			let Mapping[q]  := if Runnable[q_old, this_node]  and q_old < Mapping[q-1] then q_old;
 		}
+	}
 		
 	display Mapping;
 	
