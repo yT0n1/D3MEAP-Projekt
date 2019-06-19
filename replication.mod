@@ -1,6 +1,7 @@
 reset;
 
 option solver cplex;
+option display_1col 0;
 		
 param Num_Fragments := 10;									
 param Fragment_Size {i in 1..Num_Fragments} := Uniform(0,100);						
@@ -54,9 +55,13 @@ display Workshare;
 
 
 #### second split
-#fix Workshare;
-#fix Runnable; 
-#fix Location;
+
+param nodes_workshare {query in 1..Num_Queries, nodes in 1..Num_Nodes};  
+
+for {q in 1..Num_Queries, n in 1..Num_Nodes} {
+	let nodes_workshare[q, n] := Workshare[q,n]
+}
+
 param this_node := 1;
 # we reduce the number of queries which is critical to reduce complexity, however, we also need to give new names/numbers here
 param Num_Queries_on_Node default 0; 
@@ -86,11 +91,20 @@ subject to NB4_1 {N in 1..Servers_per_Node, Q in node_queries}:
 subject to NB5_1 {N in 1..Servers_per_Node, Q in node_queries}:
 	Workshare_Node[Q, N] <= Runnable_Node[Q, N];
 	
-#subject to NB6_1 {N in 1..Servers_per_Node}: sum{q in node_queries} (Workshare_Node[q, N] * Workload[q] * Workshare[q,this_node]) / (Total_Worload/Num_Nodes) = 1/Servers_per_Node; 
+subject to NB6_1 {N in 1..Servers_per_Node}: sum{q in node_queries} ((Workshare_Node[q, N] * Workload[q] * nodes_workshare[q,this_node]) / (Total_Worload/Num_Nodes)) = 1/Servers_per_Node; 
 objective LP2;
 solve;
 display LP2; 
 display Location_Node;
 display Runnable_Node;
 display Workshare_Node; 
+display nodes_workshare;
+param work2 {n in 1..Num_Nodes};  
+
+for { n in 1..Servers_per_Node} {
+	let work2[n] := sum{q in node_queries} Workshare_Node[q, n]* nodes_workshare[q, this_node] * Workload[q] / (Total_Worload/Num_Nodes);
+}
+
+
+display work2;
 	
