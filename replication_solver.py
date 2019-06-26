@@ -2,7 +2,8 @@ from amplpy import AMPL, Environment
 
 
 def main():
-    ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
+    #ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
+    ampl = AMPL(Environment('../ampl/'))
     ampl.read('replication_function.mod')
     """
     param Num_Queries_on_Node default 0; 
@@ -20,10 +21,6 @@ def main():
     param Number_of_Children default 0;
     """
 
-
-    this_node = ampl.getParameter('this_node')
-    this_node.setValues(0)
-    Num_Queries_on_Node = ampl.getParameter('Num_Queries_on_Node')
     a = ampl.getParameters()
 
 
