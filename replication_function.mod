@@ -1,11 +1,10 @@
 
 reset;
 
-option solver cplex;
+option solver gurobi;
 option display_1col 0; 
 
 
-param this_node;
 # we reduce the number of queries which is critical to reduce complexity, however, we also need to give new names/numbers here
 param Num_Queries_on_Node default 0; 
 set node_queries default {};
