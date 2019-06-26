@@ -20,8 +20,9 @@ param Servers_per_Node = Num_Servers / Num_Nodes;
 var Location {fragment in 1..Num_Fragments, nodes in 1..Num_Nodes} binary;
 var Runnable {query in 1..Num_Queries, nodes in 1..Num_Nodes}  binary; 
 var Workshare {query in 1..Num_Queries, nodes in 1..Num_Nodes} >= 0; 
+var epsilon;
 
-minimize LP: sum{F in 1..Num_Fragments, N in 1..Num_Nodes} (Location[F, N] * Fragment_Size[F]);
+minimize LP: (sum{F in 1..Num_Fragments, N in 1..Num_Nodes} (Location[F, N] * Fragment_Size[F])) + 1000 * epsilon;
 
 #query mindestens auf einem system ausfuerbar
 subject to NB1 {Q in 1..Num_Queries}: sum{N in 1..Num_Nodes} Runnable[Q,N] >= 1;
@@ -35,7 +36,7 @@ subject to NB3 {N in 1..Num_Nodes, Q in 1..Num_Queries}:
 subject to NB4 {N in 1..Num_Nodes, Q in 1..Num_Queries}:
 	Workshare[Q, N] <= Runnable[Q, N];
 	
-subject to NB5 {N in 1..Num_Nodes}: sum{q in 1..Num_Queries} (Workshare[q, N] * Workload[q]) / Total_Worload = 1/Num_Nodes; 
+subject to NB5 {N in 1..Num_Nodes}: sum{q in 1..Num_Queries} (Workshare[q, N] * Workload[q]) / Total_Worload = 1/Num_Nodes + epsilon; 
 
 param work {n in 1..Num_Nodes};  
 
@@ -67,8 +68,9 @@ set required_fragments default {};
 var Location_Node {fragment in required_fragments, nodes in 1..Servers_per_Node} binary;
 var Runnable_Node {query in node_queries, nodes in 1..Servers_per_Node}  binary; 
 var Workshare_Node {query in node_queries, nodes in 1..Servers_per_Node} >= 0; 
+var epsilon2;
 
-minimize LP2: sum{F in required_fragments, N in 1..Servers_per_Node} (Location_Node[F, N] * Fragment_Size[F]);
+minimize LP2: (sum{F in required_fragments, N in 1..Servers_per_Node} (Location_Node[F, N] * Fragment_Size[F])) + 1000 * epsilon2;
 
 #jede uebrig gebliebene query mindestens auf einem system ausfuerbar
 subject to NB1_1 {Q in node_queries}: sum{N in 1..Servers_per_Node} Runnable_Node[Q,N] >= 1;
@@ -82,7 +84,7 @@ subject to NB3_1 {N in 1..Servers_per_Node, Q in node_queries}:
 subject to NB4_1 {N in 1..Servers_per_Node, Q in node_queries}:
 	Workshare_Node[Q, N] <= Runnable_Node[Q, N];
 	
-subject to NB5_1 {N in 1..Servers_per_Node}: sum{q in node_queries} ((Workshare_Node[q, N] * Workload[q] * Workshare[q,this_node]) / (Total_Worload/Num_Nodes)) = 1/Servers_per_Node; 
+subject to NB5_1 {N in 1..Servers_per_Node}: sum{q in node_queries} ((Workshare_Node[q, N] * Workload[q] * Workshare[q,this_node]) / (Total_Worload/Num_Nodes)) = 1/Servers_per_Node + epsilon2; 
 
 
 problem Second_Cut: LP2, Location_Node, Runnable_Node, Workshare_Node, NB1_1, NB2_1, NB3_1, NB4_1, NB5_1;
