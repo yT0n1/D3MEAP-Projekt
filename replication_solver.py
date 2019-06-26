@@ -1,8 +1,9 @@
-from amplpy import AMPL, Environment
+from amplpy import AMPL, Environment, DataFrame
 
 
 def main():
-    ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
+    #ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
+    ampl = AMPL(Environment('../ampl/'))
     ampl.read('replication_function.mod')
     """
     param Num_Queries_on_Node default 0; 
@@ -28,12 +29,18 @@ def main():
     ampl.getSet('node_queries').setValues([1,2,3,4,5])
     ampl.getSet('required_fragments').setValues([1,2,3,4])
     ampl.getParameter('Fragment_Size').setValues([1,1,2,3])
-    ampl.getParameter('Queries').setValues([[1,1,1,0],[0,1,1,0],[0,1,0,1], [1,1,1,1], [1,1,1,1]])
-    ampl.getParameter('Query_Frequency').setValues([6,1,0.5,2])
-    ampl.getParameter('Query_Cost').setValues([10, 20, 20, 5])
-    ampl.getParameter('Num_Nodes').setValues(3)
-    ampl.getParameter('Number_of_Children').setValues(2)
+    #ampl.getParameter('Queries').setValues([[1,1,1,0],[0,1,1,0],[0,1,0,1], [1,1,1,1], [1,1,1,1]])
+    ampl.getParameter('Query_Frequency').setValues([6,1,0.5,2,10])
+    ampl.getParameter('Query_Cost').setValues([10, 20, 20, 5, 20])
+    #ampl.getParameter('Num_Nodes').setValues(3)
+    #ampl.getParameter('Number_of_Children').setValues(2)
 
+    df = DataFrame(('fragment', 'query'), ('needs'))
+    df.setColumn('fragment', [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4])
+    df.setColumn('query', [1,2,3,4,5] * 4)
+    df.setColumn('needs', [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    ampl.getParameter('Queries').setValues(df)
+    print(ampl.getParameter('Queries').getValues())
 
 
     ampl.solve()
