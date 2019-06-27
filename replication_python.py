@@ -12,8 +12,8 @@ def generate_queries(param_num_queries, param_num_fragments):
     return queries
 
 
-def solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost, param_num_nodes):
-
+def solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost,
+                param_num_nodes):
     def generate_index_dict(first_index, second_index):
         dict_index = []
         for i in range(first_index):
@@ -25,33 +25,36 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         sum = 0
         for f in range(param_num_fragments):
             for n in range(param_num_nodes):
-                sum += var_location[(f,n)] * param_fragment_size[f]
+                sum += var_location[(f, n)] * param_fragment_size[f]
         sum += 1000 * var_epsilon
         return sum
 
     def nb_1(problem_instance):
         for q in range(param_num_queries):
-            c = sum([var_runnable[(q,n)] for n in range(param_num_nodes)]) >= 1
+            c = sum([var_runnable[(q, n)] for n in range(param_num_nodes)]) >= 1
             problem_instance += c
         return problem_instance
 
     def nb_2(problem_instance):
         for q in range(param_num_queries):
-            c = sum([var_workshare[(q,n)] for n in range(param_num_nodes)]) >= 1
+            c = sum([var_workshare[(q, n)] for n in range(param_num_nodes)]) >= 1
             problem_instance += c
         return problem_instance
 
     def nb_3(problem_instance):
         for n in range(param_num_nodes):
             for q in range(param_num_queries):
-                c = var_runnable[(q,n)] * sum([param_queries[q][f] for f in range(param_num_fragments)]) <= sum([var_location[(f,n)] * param_queries[q][f] for f in range(param_num_fragments)])
+                c = var_runnable[(q, n)] * sum(
+                    [param_queries[q][f] for f in range(param_num_fragments)]) <= sum(
+                    [var_location[(f, n)] * param_queries[q][f] for f in
+                     range(param_num_fragments)])
                 problem_instance += c
         return problem_instance
 
     def nb_4(problem_instance):
         for n in range(param_num_nodes):
             for q in range(param_num_queries):
-                c = var_workshare[(q,n)] <= var_runnable[q,n]
+                c = var_workshare[(q, n)] <= var_runnable[q, n]
                 problem_instance += c
         return problem_instance
 
@@ -67,16 +70,19 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     param_num_fragments = len(param_fragment_size)
     param_num_queries = len(param_query_cost)
 
-    param_query_workload = [a*b for a,b in zip(param_query_frequency, param_query_cost)]
+    param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
     param_total_workload = sum(param_query_workload)
 
     location_dict_index = generate_index_dict(param_num_fragments, param_num_nodes)
     runnable_dict_index = generate_index_dict(param_num_queries, param_num_nodes)
     workshare_dict_index = generate_index_dict(param_num_queries, param_num_nodes)
 
-    var_location = LpVariable.dicts(name="location", indexs=location_dict_index, lowBound=0, upBound=1, cat='Integer')
-    var_runnable = LpVariable.dicts(name="runnable", indexs=runnable_dict_index, lowBound=0, upBound=1, cat='Integer')
-    var_workshare = LpVariable.dicts(name="workshare", indexs=workshare_dict_index, lowBound=0, cat='Continuous')
+    var_location = LpVariable.dicts(name="location", indexs=location_dict_index, lowBound=0,
+                                    upBound=1, cat='Integer')
+    var_runnable = LpVariable.dicts(name="runnable", indexs=runnable_dict_index, lowBound=0,
+                                    upBound=1, cat='Integer')
+    var_workshare = LpVariable.dicts(name="workshare", indexs=workshare_dict_index, lowBound=0,
+                                     cat='Continuous')
     var_epsilon = LpVariable(name="epsilon", lowBound=0, cat='Continuous')
 
     problem += objective()
@@ -106,32 +112,35 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         print(str(loc) + " " + str(var_workshare[loc].varValue))
         sum_workload += var_workshare[loc].varValue
 
-    print("Sum Workload: "+str(sum_workload))
-
+    print("Sum Workload: ", str(sum_workload))
+    print("Objective Value", problem.objective.value())
     print(problem.objective.value())
 
-    return
-
-
-
+    return problem
 
 def main():
     param_num_fragments = 7
     param_num_queries = 7
     param_num_nodes = 4
 
-    random.seed(1337)
-    param_fragment_size = random.sample(range(1, 100), param_num_fragments)
-    param_queries = generate_queries(param_num_queries, param_num_fragments)
-    param_query_frequency = random.sample(range(1, 100), param_num_queries)
-    param_query_cost = random.sample(range(1, 100), param_num_queries)
+    param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
+    param_queries = [[1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0], [0, 1, 1, 0, 1, 1, 0],
+                     [0, 0, 1, 1, 1, 1, 0], [1, 1, 0, 0, 0, 1, 0], [1, 0, 1, 0, 0, 0, 1],
+                     [0, 1, 1, 0, 0, 1, 1]]
+
+    param_query_frequency = [4, 5, 6, 1, 2, 3, 4]
+    param_query_cost = [10, 20, 25, 15, 22, 33, 21]
     param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
     param_total_workload = sum(param_query_workload)
 
     print(len(param_queries))
     print(len(param_query_cost))
 
-    solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost, param_num_nodes)
+    problem = solve_split(param_fragment_size, param_queries, param_query_frequency,
+                         param_query_cost,
+                param_num_nodes)
+    print('minimum possible would be:', sum(param_fragment_size))
+    assert problem.objective.value() >= sum(param_fragment_size)
 
 if __name__ == '__main__':
     main()
