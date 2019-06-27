@@ -11,11 +11,11 @@ def generate_queries(param_num_queries, param_num_fragments):
         queries.append(temp_list)
     return queries
 
-def print_location(var_location, num_nodes, num_fragments):
-    for n in range(num_nodes):
+def print_location(var, index_x, index_y):
+    for n in range(index_x):
         print_string = "Node "+str(n)+": "
-        for f in range(num_fragments):
-            print_string += str(int(var_location[(f,n)].varValue))+" "
+        for f in range(index_y):
+            print_string += str(int(var[(f, n)].varValue)) + " "
         print(print_string)
 
 
@@ -34,7 +34,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         for f in range(param_num_fragments):
             for n in range(param_num_nodes):
                 sum += var_location[(f, n)] * param_fragment_size[f]
-        sum += 10 * var_epsilon
+        sum += 1000 * var_epsilon
         return sum
 
     def nb_1(problem_instance):
@@ -109,14 +109,15 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     print("")
     print("##### RUNNABLE #####")
-    for loc in var_runnable.keys():
-        print(str(loc) + " " + str(var_runnable[loc].varValue))
+    print_location(var_runnable, param_num_nodes, param_num_queries)
 
     print("")
     print("##### WORKSHARE #####")
+    print_location(var_workshare, param_num_nodes, param_num_queries)
+
+    print("")
     sum_workload = 0
     for loc in var_workshare.keys():
-        print(str(loc) + " " + str(var_workshare[loc].varValue))
         sum_workload += var_workshare[loc].varValue
 
     print("Sum Workload: ", str(sum_workload))
