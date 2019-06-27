@@ -108,8 +108,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     return
 
 
-if __name__ == '__main__':
-    main()
+
 
 def main():
     param_num_fragments = 7
@@ -128,3 +127,5 @@ def main():
 
     solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost, param_num_nodes)
 
+if __name__ == '__main__':
+    main()
