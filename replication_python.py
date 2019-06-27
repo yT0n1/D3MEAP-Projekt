@@ -1,5 +1,6 @@
 from pulp import *
 import random
+import numpy as np
 
 
 def generate_queries(param_num_queries, param_num_fragments):
@@ -100,18 +101,15 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     problem = nb_4(problem)
     problem = nb_5(problem)
 
-    print(problem)
     problem.solve()
 
-    print("")
     print("##### LOCATION #####")
     print_location(var_location, param_num_nodes, param_num_fragments)
+    location = np.ndarray((len(param_queries),param_num_nodes))
 
-    print("")
     print("##### RUNNABLE #####")
     print_location(var_runnable, param_num_nodes, param_num_queries)
 
-    print("")
     print("##### WORKSHARE #####")
     print_location(var_workshare, param_num_nodes, param_num_queries)
 
@@ -125,9 +123,10 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     return problem
 
+
+
+
 def main():
-    param_num_fragments = 7
-    param_num_queries = 7
     param_num_nodes = 4
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
@@ -148,6 +147,7 @@ def main():
                 param_num_nodes)
     print('minimum possible would be:', sum(param_fragment_size))
     assert problem.objective.value() >= sum(param_fragment_size)
+    assert len(param_fragment_size) == len(param_query_frequency) == len(param_query_cost)
 
 if __name__ == '__main__':
     main()
