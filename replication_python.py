@@ -1,5 +1,6 @@
 from pulp import *
 import random
+import numpy as np
 
 
 def generate_queries(param_num_queries, param_num_fragments):
@@ -34,7 +35,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         for f in range(param_num_fragments):
             for n in range(param_num_nodes):
                 sum += var_location[(f, n)] * param_fragment_size[f]
-        sum += 10 * var_epsilon
+        sum += 1000 * var_epsilon
         return sum
 
     def nb_1(problem_instance):
@@ -100,19 +101,16 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     problem = nb_4(problem)
     problem = nb_5(problem)
 
-    print(problem)
     problem.solve()
 
-    print("")
     print("##### LOCATION #####")
     print_location(var_location, param_num_nodes, param_num_fragments)
+    location = np.ndarray((len(param_queries),param_num_nodes))
 
-    print("")
     print("##### RUNNABLE #####")
     for loc in var_runnable.keys():
         print(str(loc) + " " + str(var_runnable[loc].varValue))
 
-    print("")
     print("##### WORKSHARE #####")
     sum_workload = 0
     for loc in var_workshare.keys():
@@ -124,9 +122,10 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     return problem
 
+
+
+
 def main():
-    param_num_fragments = 7
-    param_num_queries = 7
     param_num_nodes = 4
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
@@ -147,6 +146,7 @@ def main():
                 param_num_nodes)
     print('minimum possible would be:', sum(param_fragment_size))
     assert problem.objective.value() >= sum(param_fragment_size)
+    assert len(param_fragment_size) == len(param_query_frequency) == len(param_query_cost)
 
 if __name__ == '__main__':
     main()
