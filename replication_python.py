@@ -2,7 +2,7 @@ from pulp import *
 import random
 
 
-def generate_queries():
+def generate_queries(param_num_queries, param_num_fragments):
     queries = []
     for i in range(param_num_queries):
         temp_list = []
@@ -116,7 +116,7 @@ def main():
     param_num_nodes = 4
 
     param_fragment_size = random.sample(range(1, 100), param_num_fragments)
-    param_queries = generate_queries()
+    param_queries = generate_queries(param_num_queries, param_num_fragments)
     param_query_frequency = random.sample(range(1, 100), param_num_queries)
     param_query_cost = random.sample(range(1, 100), param_num_queries)
     param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
