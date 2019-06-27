@@ -3,7 +3,7 @@ import copy
 from pulp import *
 import random
 import numpy as np
-from anytree import PreOrderIter
+from anytree import PreOrderIter, RenderTree, DoubleStyle
 import itertools
 from anytree import Node as AbstractNode
 
@@ -288,8 +288,12 @@ def main():
     split3 = Node("split3", parent=split1)
     split4 = Node("split4", parent=split2)
     split5 = Node("split5", parent=split2)
-    split6 = Node("split6", parent=split3)
-    split7 = Node("split7", parent=split3)
+    split6 = Node("split4", parent=split2)
+    split7 = Node("split6", parent=split3)
+    split8 = Node("split7", parent=split3)
+
+    print(RenderTree(split1, style=DoubleStyle))
+
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
