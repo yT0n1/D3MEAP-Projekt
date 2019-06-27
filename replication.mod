@@ -1,11 +1,11 @@
 reset;
 
-option solver cplex;
+option solver gurobi;
 option display_1col 0; #do not collaps matrixes on display
 		
-param Num_Fragments := 6;									
+param Num_Fragments := 9;									
 param Fragment_Size {i in 1..Num_Fragments} := Uniform(0,100);						
-param Num_Queries := 5;
+param Num_Queries := 9;
 param Queries {f in 1..Num_Fragments, q in 1..Num_Queries} := round(Uniform(0,1));
 display Queries;
 param Query_Frequency {i in 1..Num_Queries} := Uniform(0,100);
@@ -13,7 +13,7 @@ param Query_Cost {i in 1..Num_Queries} := Uniform(0,100);
 param Workload {i in 1..Num_Queries} := Query_Cost[i] *  Query_Frequency[i];
 display Workload;
 param Total_Worload := sum {Q in 1..Num_Queries} Workload[Q];
-param Num_Nodes := 3;
+param Num_Nodes := 5;
 param Num_Servers := Num_Nodes * 4;
 param Servers_per_Node = Num_Servers / Num_Nodes;
 

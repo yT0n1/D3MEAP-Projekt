@@ -1,9 +1,11 @@
+from typing import List
+
 from amplpy import AMPL, Environment, DataFrame
 
 
 def main():
-    #ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
-    ampl = AMPL(Environment('../ampl/'))
+    ampl = AMPL(Environment('./../amplide.macosx64/amplide.macosx64'))
+    #ampl = AMPL(Environment('../ampl/'))
     ampl.read('replication_function.mod')
     """
     param Num_Queries_on_Node default 0; 
@@ -32,18 +34,32 @@ def main():
     #ampl.getParameter('Queries').setValues([[1,1,1,0],[0,1,1,0],[0,1,0,1], [1,1,1,1], [1,1,1,1]])
     ampl.getParameter('Query_Frequency').setValues([6,1,0.5,2,10])
     ampl.getParameter('Query_Cost').setValues([10, 20, 20, 5, 20])
-    #ampl.getParameter('Num_Nodes').setValues(3)
-    #ampl.getParameter('Number_of_Children').setValues(2)
+    ampl.getParameter('Num_Nodes').setValues([2])
+    ampl.getParameter('Number_of_Children').setValues([2])
 
     df = DataFrame(('fragment', 'query'), ('needs'))
     df.setColumn('fragment', [1,1,1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4])
     df.setColumn('query', [1,2,3,4,5] * 4)
-    df.setColumn('needs', [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1])
+    df.setColumn('needs', [1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,0,1])
+    print(df)
     ampl.getParameter('Queries').setValues(df)
-    print(ampl.getParameter('Queries').getValues())
-
+    print(ampl.getOutput('display Queries;'))
 
     ampl.solve()
+    print(ampl.getOutput('display LP2;'))
+    print(ampl.getOutput('display Queries;'))
+    print(ampl.getOutput('display Fragment_Size;'))
+    print(ampl.getOutput('display Query_Frequency;'))
+    print(ampl.getOutput('display Query_Cost;'))
+    print(ampl.getOutput('display Runnable_Node;'))
+    print(ampl.getOutput('display Workshare_Node;'))
+    print(ampl.getOutput('display node_queries;'))
+    print(ampl.getOutput('display required_fragments;'))
+    runnable = ampl.getVariable('Runnable_Node')
+
+
+    print('hi')
+
 
 
 
