@@ -1,6 +1,7 @@
 from pulp import *
 import random
 import numpy as np
+from anytree import Node, RenderTree, PreOrderIter
 
 
 def generate_queries(param_num_queries, param_num_fragments):
@@ -102,24 +103,39 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     problem.solve()
 
     print("##### LOCATION #####")
-    print_location(var_location, param_num_nodes, param_num_fragments)
+    for loc in var_location.keys():
+        print(str(loc), str(var_location[loc].varValue))
+
+    print("")
     print("##### RUNNABLE #####")
-    print_location(var_runnable, param_num_nodes, param_num_queries)
-    print("##### WORKSHARE #####")
-    print_location(var_workshare, param_num_nodes, param_num_queries)
+    for loc in var_runnable.keys():
+        print(str(loc), str(var_runnable[loc].varValue))
 
     sum_workload = 0
     for loc in var_workshare.keys():
         sum_workload += var_workshare[loc].varValue
 
     print("Sum Workload: ", str(sum_workload))
-    print("Objective Value", problem.objective.value() - 1000 * var_epsilon.value())
+    print("Objective Value:", str(problem.objective.value() - 1000 * var_epsilon.value()))
+    print("Epsilon:", str(var_epsilon.value()), "(Optimum ", "{})".format(str(float(1) / param_num_nodes)))
 
     return problem
 
 
 def main():
     param_num_nodes = 4
+    split1 = Node("split1")
+    split2 = Node("split2", parent=split1)
+    split3 = Node("split3", parent=split1)
+    split4 = Node("split4", parent=split2)
+    split5 = Node("split5", parent=split2)
+    split6 = Node("split6", parent=split3)
+    split7 = Node("split7", parent=split3)
+
+    nodes = [ node for node in PreOrderIter(split1) ]
+    
+    
+
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0],[0, 1, 1, 0, 1, 1, 0],[0, 0, 1, 1, 1, 1, 0],
