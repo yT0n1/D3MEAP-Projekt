@@ -115,6 +115,7 @@ def main():
     param_num_queries = 7
     param_num_nodes = 4
 
+    random.seed(1337)
     param_fragment_size = random.sample(range(1, 100), param_num_fragments)
     param_queries = generate_queries(param_num_queries, param_num_fragments)
     param_query_frequency = random.sample(range(1, 100), param_num_queries)
