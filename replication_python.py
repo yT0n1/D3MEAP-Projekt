@@ -108,19 +108,23 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     return
 
 
-# Main Code:
-param_num_fragments = 7
-param_num_queries = 7
-param_num_nodes = 4
+if __name__ == '__main__':
+    main()
 
-param_fragment_size = random.sample(range(1, 100), param_num_fragments)
-param_queries = generate_queries()
-param_query_frequency = random.sample(range(1, 100), param_num_queries)
-param_query_cost = random.sample(range(1, 100), param_num_queries)
-param_query_workload = [a*b for a,b in zip(param_query_frequency, param_query_cost)]
-param_total_workload = sum(param_query_workload)
+def main():
+    param_num_fragments = 7
+    param_num_queries = 7
+    param_num_nodes = 4
 
-print(len(param_queries))
-print(len(param_query_cost))
+    param_fragment_size = random.sample(range(1, 100), param_num_fragments)
+    param_queries = generate_queries()
+    param_query_frequency = random.sample(range(1, 100), param_num_queries)
+    param_query_cost = random.sample(range(1, 100), param_num_queries)
+    param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
+    param_total_workload = sum(param_query_workload)
 
-solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost, param_num_nodes)
+    print(len(param_queries))
+    print(len(param_query_cost))
+
+    solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost, param_num_nodes)
+
