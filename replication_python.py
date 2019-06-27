@@ -18,6 +18,7 @@ def print_location(var, index_x, index_y):
         for f in range(index_y):
             print_string += str(int(var[(f, n)].varValue)) + " "
         print(print_string)
+    print(" ")
 
 
 
@@ -69,8 +70,9 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     def nb_5(problem_instance):
         for n in range(param_num_nodes):
-            c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) <= var_epsilon
-            problem_instance += c
+            for w in range(len(param_query_workload)):
+                c = (sum([var_workshare[(q,n)] * param_query_workload[w][q] for q in range(param_num_queries)]) / param_total_workload[w]) <= var_epsilon
+                problem_instance += c
         return problem_instance
 
     problem = LpProblem("replication", LpMinimize)
@@ -78,8 +80,8 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     param_num_fragments = len(param_fragment_size)
     param_num_queries = len(param_query_cost)
 
-    param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
-    param_total_workload = sum(param_query_workload)
+    param_query_workload = [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for i in range(len(param_query_frequency))]
+    param_total_workload = [sum(param_query_workload[i]) for i in range(len(param_query_workload))]
 
     location_dict_index = generate_index_dict(param_num_fragments, param_num_nodes)
     runnable_dict_index = generate_index_dict(param_num_queries, param_num_nodes)
@@ -106,7 +108,6 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     print("##### WORKSHARE #####")
     print_location(var_workshare, param_num_nodes, param_num_queries)
 
-    print("")
     sum_workload = 0
     for loc in var_workshare.keys():
         sum_workload += var_workshare[loc].varValue
@@ -123,14 +124,14 @@ def main():
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0],[0, 1, 1, 0, 1, 1, 0],[0, 0, 1, 1, 1, 1, 0],
                      [1, 1, 0, 0, 0, 1, 0], [1, 0, 1, 0, 0, 0, 1],[0, 1, 1, 0, 0, 1, 1]]
-    param_query_frequency = [4, 5, 6, 1, 2, 3, 4]
+    param_query_frequency = [[4, 5, 6, 1, 2, 3, 4], [1, 5, 6, 6, 3, 3, 3], [5, 1, 2, 1, 6, 3, 1]]
     param_query_cost = [10, 20, 25, 15, 22, 33, 21]
 
     problem = solve_split(param_fragment_size, param_queries, param_query_frequency,param_query_cost,param_num_nodes)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     assert problem.objective.value() >= sum(param_fragment_size)
-    assert len(param_fragment_size) == len(param_query_frequency) == len(param_query_cost)
+    assert len(param_fragment_size) == len(param_query_frequency[0]) == len(param_query_cost)
 
 if __name__ == '__main__':
     main()
