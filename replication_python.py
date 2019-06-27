@@ -113,8 +113,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         sum_workload += var_workshare[loc].varValue
 
     print("Sum Workload: ", str(sum_workload))
-    print("Objective Value", problem.objective.value())
-    print(problem.objective.value())
+    print("Objective Value", problem.objective.value() - 1000 * var_epsilon.value())
 
     return problem
 
