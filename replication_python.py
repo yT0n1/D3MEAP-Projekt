@@ -69,7 +69,6 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     def nb_5(problem_instance):
         for n in range(param_num_nodes):
-            #c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) == (1 / param_num_nodes)
             c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) <= var_epsilon
             problem_instance += c
         return problem_instance
@@ -130,22 +129,14 @@ def main():
     param_num_nodes = 4
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
-    param_queries = [[1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0], [0, 1, 1, 0, 1, 1, 0],
-                     [0, 0, 1, 1, 1, 1, 0], [1, 1, 0, 0, 0, 1, 0], [1, 0, 1, 0, 0, 0, 1],
-                     [0, 1, 1, 0, 0, 1, 1]]
-
+    param_queries = [[1, 1, 0, 1, 1, 1, 0], [0, 0, 0, 0, 1, 0, 0],[0, 1, 1, 0, 1, 1, 0],[0, 0, 1, 1, 1, 1, 0],
+                     [1, 1, 0, 0, 0, 1, 0], [1, 0, 1, 0, 0, 0, 1],[0, 1, 1, 0, 0, 1, 1]]
     param_query_frequency = [4, 5, 6, 1, 2, 3, 4]
     param_query_cost = [10, 20, 25, 15, 22, 33, 21]
-    param_query_workload = [a * b for a, b in zip(param_query_frequency, param_query_cost)]
-    param_total_workload = sum(param_query_workload)
 
-    print(len(param_queries))
-    print(len(param_query_cost))
+    problem = solve_split(param_fragment_size, param_queries, param_query_frequency,param_query_cost,param_num_nodes)
 
-    problem = solve_split(param_fragment_size, param_queries, param_query_frequency,
-                         param_query_cost,
-                param_num_nodes)
-    print('minimum possible would be:', sum(param_fragment_size))
+    print('Minimum possible would be:', sum(param_fragment_size))
     assert problem.objective.value() >= sum(param_fragment_size)
     assert len(param_fragment_size) == len(param_query_frequency) == len(param_query_cost)
 
