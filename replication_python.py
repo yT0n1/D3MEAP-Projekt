@@ -11,6 +11,14 @@ def generate_queries(param_num_queries, param_num_fragments):
         queries.append(temp_list)
     return queries
 
+def print_location(var_location, num_nodes, num_fragments):
+    for n in range(num_nodes):
+        print_string = "Node "+str(n)+": "
+        for f in range(num_fragments):
+            print_string += str(int(var_location[(f,n)].varValue))+" "
+        print(print_string)
+
+
 
 def solve_split(param_fragment_size, param_queries, param_query_frequency, param_query_cost,
                 param_num_nodes):
@@ -26,7 +34,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         for f in range(param_num_fragments):
             for n in range(param_num_nodes):
                 sum += var_location[(f, n)] * param_fragment_size[f]
-        sum += 1000 * var_epsilon
+        sum += 10 * var_epsilon
         return sum
 
     def nb_1(problem_instance):
@@ -97,8 +105,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     print("")
     print("##### LOCATION #####")
-    for loc in var_location.keys():
-        print(str(loc) + " " + str(var_location[loc].varValue))
+    print_location(var_location, param_num_nodes, param_num_fragments)
 
     print("")
     print("##### RUNNABLE #####")
