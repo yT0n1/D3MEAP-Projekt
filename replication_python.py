@@ -26,6 +26,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         for f in range(param_num_fragments):
             for n in range(param_num_nodes):
                 sum += var_location[(f,n)] * param_fragment_size[f]
+        sum += 1000 * var_epsilon
         return sum
 
     def nb_1(problem_instance):
@@ -56,7 +57,8 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     def nb_5(problem_instance):
         for n in range(param_num_nodes):
-            c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) == (1 / param_num_nodes)
+            #c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) == (1 / param_num_nodes)
+            c = (sum([var_workshare[(q,n)] * param_query_workload[q] for q in range(param_num_queries)]) / param_total_workload) <= var_epsilon
             problem_instance += c
         return problem_instance
 
@@ -75,6 +77,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
     var_location = LpVariable.dicts(name="location", indexs=location_dict_index, lowBound=0, upBound=1, cat='Integer')
     var_runnable = LpVariable.dicts(name="runnable", indexs=runnable_dict_index, lowBound=0, upBound=1, cat='Integer')
     var_workshare = LpVariable.dicts(name="workshare", indexs=workshare_dict_index, lowBound=0, cat='Continuous')
+    var_epsilon = LpVariable(name="epsilon", lowBound=0, cat='Continuous')
 
     problem += objective()
     problem = nb_1(problem)
@@ -104,6 +107,8 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
         sum_workload += var_workshare[loc].varValue
 
     print("Sum Workload: "+str(sum_workload))
+
+    print(problem.objective.value())
 
     return
 
