@@ -26,6 +26,10 @@ def print_location(var, index_x, index_y):
         print(print_string)
     print(" ")
 
+def print_workload(var, index_x, index_y):
+    for x in range(index_x):
+        for y in range(index_y):
+            print("({}, {}) {}".format(x,y,var[x,y].varValue))
 
 def print_location_adaptive(var, index_x, indeces):
     for n in range(index_x):
@@ -34,7 +38,6 @@ def print_location_adaptive(var, index_x, indeces):
             print_string += str(int(var[(f, n)].varValue)) + " "
         print(print_string)
     print(" ")
-
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
@@ -235,7 +238,7 @@ def solve_split(param_fragment_size, param_queries, param_query_frequency, param
 
     print("")
     print("##### WORKSHARE #####")
-    print_location(var_workshare, param_num_nodes, param_num_queries)
+    print_workload(var_workshare, param_num_queries, param_num_nodes)
 
     print("")
 
@@ -315,13 +318,13 @@ def main():
 
     split1.problem = Problem(param_fragment_size, param_queries,
                              param_query_frequency, param_query_cost, param_query_ids)
-    nodes = [node.solve() for node in PreOrderIter(split1)]
+    #nodes = [node.solve() for node in PreOrderIter(split1)]
     # The leave nodes present no problem and are not solved, thus the tree that is defined here
     # has only three splits !!!!!
 
 
-    # problem = solve_split(param_fragment_size, param_queries, param_query_frequency,
-    #                       param_query_cost, param_num_nodes)
+    problem = solve_split(param_fragment_size, param_queries, param_query_frequency,
+                           param_query_cost, param_num_nodes)
     #
     # problem = solve_split_adaptive(param_fragment_size, param_queries, param_query_frequency,
     #                       param_query_cost, param_num_nodes,[0,1,2,3,4,5,6])
