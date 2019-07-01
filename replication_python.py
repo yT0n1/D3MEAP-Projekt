@@ -180,25 +180,13 @@ def main():
     assert len(param_query_frequency[0]) == len(param_query_cost) \
            == len(param_query_ids) == len(param_queries)
 
-    split1 = tree1()
-    print(RenderTree(split1, style=DoubleStyle))
-    split1.problem = Problem(param_fragment_size, param_queries,
+    problem =  Problem(param_fragment_size, param_queries,
                              param_query_frequency, param_query_cost, param_query_ids,
                              len(param_query_ids))
 
-    #total_space = [node.solve() for node in PreOrderIter(split1)]
-    #print('Split Space required', total_space)
+    solve_for_tree(tree1(), problem)
+    solve_for_tree(tree2(), problem)
 
-
-    root2 = tree2()
-    print(RenderTree(root2, style=DoubleStyle))
-    root2.problem = Problem(param_fragment_size, param_queries,
-                             param_query_frequency, param_query_cost, param_query_ids,
-                             len(param_query_ids))
-
-
-    total_space = [node.solve() for node in PreOrderIter(root2)]
-    print('Split Space required', total_space)
     # The leave nodes present no problem and are not solved, thus the tree that is defined here
     # has only three splits !!!!!
 
@@ -212,7 +200,7 @@ def main():
 
 def tree1():
     "Binary"
-    split1 = Node("split1")
+    split1 = Node("Binary")
     split2 = Node("split2", parent=split1)
     split3 = Node("split3", parent=split1)
     split4 = Node("split4", parent=split2)
@@ -233,7 +221,7 @@ def tree1():
 
 def tree2():
     "four split"
-    root = Node("split1")
+    root = Node("Four")
     split2 = Node("split2", parent=root)
     split3 = Node("split3", parent=root)
     split4 = Node("split4", parent=root)
@@ -249,7 +237,13 @@ def tree2():
 
     return root
 
-
+def solve_for_tree(tree_root, problem):
+    print('\nSolving Tree', tree_root.name)
+    print(RenderTree(tree_root, style=DoubleStyle))
+    tree_root.problem = problem
+    total_space = [node.solve() for node in PreOrderIter(tree_root)]
+    print('Split Space required', total_space)
+    print('In total ', sum(total_space))
 
 if __name__ == '__main__':
     main()
