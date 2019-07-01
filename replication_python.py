@@ -1,6 +1,7 @@
 import copy
 
 from pulp import *
+import pulp.solvers
 import random
 import numpy as np
 from anytree import PreOrderIter, RenderTree, DoubleStyle
@@ -128,7 +129,9 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_4(problem)
     problem = nb_5(problem)
 
-    problem.solve()
+    solver = pulp.solvers.GUROBI_CMD()
+    solver.actualSolve(problem)
+    
     print('\n\nSOLVING:', name)
     print("")
     print("##### LOCATION #####")
