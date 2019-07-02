@@ -2,7 +2,7 @@ import copy
 
 from pulp import *
 import pulp.solvers
-from anytree import PreOrderIter, RenderTree, DoubleStyle
+from anytree import PreOrderIter, RenderTree, DoubleStyle, LevelOrderIter
 import itertools
 from anytree import Node as AbstractNode
 
@@ -30,15 +30,14 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     def nb_2(problem_instance):
         for q in param_query_ids:
-            c = sum([var_workshare[(q, n)] for n in range(param_num_nodes)]) >= 1
+            c = sum([var_workshare[(q, n)] for n in range(param_num_nodes)]) == 1
             problem_instance += c
         return problem_instance
 
     def nb_3(problem_instance):
         for n in range(param_num_nodes):
             for q in param_query_ids:
-                c = var_runnable[(q, n)] * sum(
-                    [param_query_compositions[q][f] for f in range(param_num_fragments)]) <= sum(
+                c = var_runnable[(q, n)] * sum(param_query_compositions[q]) <= sum(
                     [var_location[(f, n)] * param_query_compositions[q][f] for f in
                      range(param_num_fragments)])
                 problem_instance += c
@@ -47,7 +46,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     def nb_4(problem_instance):
         for n in range(param_num_nodes):
             for q in param_query_ids:
-                c = var_workshare[(q, n)] <= var_runnable[q, n]
+                c = var_workshare[(q, n)] <= var_runnable[(q, n)]
                 problem_instance += c
         return problem_instance
 
@@ -87,8 +86,9 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_4(problem)
     problem = nb_5(problem)
 
-    solver = pulp.solvers.GUROBI_CMD()
-    solver.actualSolve(problem)
+    problem.solve()
+    #solver = pulp.solvers.GUROBI_CMD()
+    #solver.actualSolve(problem)
     
     print('\n\nSOLVING:', name)
     print("")
@@ -149,7 +149,7 @@ class Node(AbstractNode):
             self.name)
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
-                                if var_runnable[(q, c)].value()]
+                                if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]
             # we adapt the cost of a query by the share of work that is done on the child
             # for this we do a dictionary only with the indeces from the queries we need
             query_cost_on_child = [var_workshare[(q, c)].value() * self.problem.param_query_cost[
@@ -162,7 +162,7 @@ class Node(AbstractNode):
 
 
 def main():
-    param_num_nodes = 4
+    param_num_nodes = 8
 
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
@@ -188,14 +188,14 @@ def main():
                              len(param_query_ids))
 
     solve_for_tree(tree1(), problem)
-    solve_for_tree(tree2(), problem)
+    #solve_for_tree(tree2(), problem)
 
     # The leave nodes present no problem and are not solved, thus the tree that is defined here
     # has only three splits !!!!!
 
     #
-    problem = solve_split_adaptive(param_fragment_size, param_queries, param_query_frequency,
-                          param_query_cost, param_num_nodes,param_query_ids, 'complete')
+    # problem = solve_split_adaptive(param_fragment_size, param_queries, param_query_frequency,
+    #                       param_query_cost, param_num_nodes,param_query_ids, 'complete')
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per queriy: ', [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for
@@ -244,9 +244,11 @@ def solve_for_tree(tree_root, problem):
     print('\nSolving Tree', tree_root.name)
     print(RenderTree(tree_root, style=DoubleStyle))
     tree_root.problem = problem
-    total_space = [node.solve() for node in PreOrderIter(tree_root)]
+    total_space = [node.solve() for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
 
 if __name__ == '__main__':
     main()
+
+#mingap und timelim
