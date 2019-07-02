@@ -87,9 +87,9 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_5(problem)
 
     problem.solve()
-    #solver = pulp.solvers.GUROBI_CMD()
-    #solver.actualSolve(problem)
-    
+    # solver = pulp.solvers.GUROBI_CMD()
+    # solver.actualSolve(problem)
+
     print('\n\nSOLVING:', name)
     print("")
     print("##### LOCATION #####")
@@ -129,15 +129,15 @@ class Problem:
         self.param_query_ids = param_query_ids
         self.total_nr_queries = total_nr_queries
 
+
 class Node(AbstractNode):
 
     def solve(self):
         if not self.children:
-            size = 0
+            mask = [0] * len(self.problem.param_fragment_size)
             for q in self.problem.param_query_ids:
-                fragments = self.problem.param_queries[q]
-                size += sum(self.problem.param_fragment_size[f] * fragments[f] for f in range(
-                    len(fragments)))
+                mask = [a | b for a, b in zip(mask, self.problem.param_queries[q])]
+            size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
 
         # we use the dynamicness of pyhton to set an attribute here which will be accessed later.
@@ -164,7 +164,6 @@ class Node(AbstractNode):
 def main():
     param_num_nodes = 8
 
-
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
                      [0, 0, 0, 0, 1, 0, 0],
@@ -183,12 +182,12 @@ def main():
     assert len(param_query_frequency[0]) == len(param_query_cost) \
            == len(param_query_ids) == len(param_queries)
 
-    problem =  Problem(param_fragment_size, param_queries,
-                             param_query_frequency, param_query_cost, param_query_ids,
-                             len(param_query_ids))
+    problem = Problem(param_fragment_size, param_queries,
+                      param_query_frequency, param_query_cost, param_query_ids,
+                      len(param_query_ids))
 
     solve_for_tree(tree1(), problem)
-    #solve_for_tree(tree2(), problem)
+    solve_for_tree(tree2(), problem)
 
     # The leave nodes present no problem and are not solved, thus the tree that is defined here
     # has only three splits !!!!!
@@ -198,8 +197,10 @@ def main():
     #                       param_query_cost, param_num_nodes,param_query_ids, 'complete')
 
     print('Minimum possible would be:', sum(param_fragment_size))
-    print('Workload per queriy: ', [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for
-                            i in range(len(param_query_frequency))])
+    print('Workload per queriy: ',
+          [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for
+           i in range(len(param_query_frequency))])
+
 
 def tree1():
     "Binary"
@@ -240,6 +241,7 @@ def tree2():
 
     return root
 
+
 def solve_for_tree(tree_root, problem):
     print('\nSolving Tree', tree_root.name)
     print(RenderTree(tree_root, style=DoubleStyle))
@@ -248,7 +250,8 @@ def solve_for_tree(tree_root, problem):
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
 
+
 if __name__ == '__main__':
     main()
 
-#mingap und timelim
+# mingap und timelim
