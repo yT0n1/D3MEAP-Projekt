@@ -16,7 +16,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 10
+    param_num_nodes = 16
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -43,15 +43,14 @@ def main():
 
     s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
     s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
-    s3 = solve_for_tree(binary_tree(param_num_nodes), problem)
+    s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
 
     # The leave nodes present no problem and are not solved, thus the tree that is defined here
     # has only three splits !!!!!
 
     #
     problem = solve_split_adaptive(param_fragment_size, param_queries, param_query_frequency,
-                                   param_query_cost, param_num_nodes, param_query_ids, 'complete',
-                                   60)
+                                   param_query_cost, param_num_nodes, param_query_ids, 'complete')
 
     print(s1, s2, s3, problem[4])
 
@@ -73,5 +72,6 @@ def solve_for_tree(tree_root, problem):
 
 if __name__ == '__main__':
     main()
+    TIME_OUT_SEC = 10
 
 # mingap und timelim

@@ -8,13 +8,22 @@ import math
 from solver_node import SolverNode
 
 
-def prime_factor_tree(nr_leaf_nodes, reverse=False):
-    prime_factors = factorint(nr_leaf_nodes)
-    sort = sorted(prime_factors.items(),reverse=reverse)
-    uncompressed = [[prime]*times for prime, times in sort]
-    flat = functools.reduce(operator.iconcat, uncompressed, [])
-    parent = SolverNode("Root Prime")
-    append(parent, flat)
+def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
+    tuples = factorint(nr_leaf_nodes).items()
+    if combine:
+        if len(tuples) == 1:
+            # if we only have one prime number doing the power of it will be the exact same as the
+            # default split, thus we leave one out
+            prime, times = list(tuples)[0]
+            split_list = [prime**(times-1), prime]
+        else:
+            split_list = [prime**times for prime, times in tuples]
+    else:
+        split_list = [[prime]*times for prime, times in tuples]
+        split_list = functools.reduce(operator.iconcat, split_list, [])
+    split_list.sort(reverse=reverse)
+    parent = SolverNode("Root Prime " + str(split_list))
+    append(parent, split_list)
     return parent
 
 def binary_tree(nr_leaf_nodes):
@@ -24,6 +33,7 @@ def binary_tree(nr_leaf_nodes):
     children = [2] * nr_children
     append(parent, children)
     return parent
+
 
 def append(parent, future_children):
     if not future_children:
