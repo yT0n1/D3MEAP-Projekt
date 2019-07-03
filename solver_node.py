@@ -3,13 +3,15 @@ from pulp import *
 import pulp.solvers
 
 from anytree import Node
-from utils import print_location, print_location_adaptive
+from utils import print_location, print_location_adaptive, print_workload
 
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
-                         param_num_nodes, param_query_ids, name, timeout_sec=30):
+                         param_num_nodes, param_query_ids, name, workshare_split, timeout_sec=30):
     epsilon_factor = 1000
+    assert sum(workshare_split) == 1
+    assert len(workshare_split) == param_num_nodes
 
     def objective():
         sum = 0
@@ -98,6 +100,10 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     print("")
     print("##### WORKSHARE #####")
     print_location_adaptive(var_workshare, param_num_nodes, param_query_ids, False)
+
+    print("")
+    print("##### WORKLOAD #####")
+    print_workload(var_workshare, param_num_nodes, param_query_workload)
 
     print("")
 

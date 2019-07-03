@@ -1,4 +1,5 @@
 import random
+from statistics import mean
 
 
 def generate_queries(param_num_queries, param_num_fragments):
@@ -41,3 +42,18 @@ def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
                 print_string += "{0:.5f} ".format(round(var[(f, n)].varValue, 5))
         print(print_string)
     print(" ")
+
+def print_workload(var_workshare, param_num_nodes, param_query_workload):
+    for workload in range(len(param_query_workload)):
+        print_str = "Workload {}: ".format(workload)
+        sum_list = []
+        for n in range(param_num_nodes):
+            val = sum([var_workshare[q,n].varValue * param_query_workload[workload][q] for q in range(len(param_query_workload[0]))])
+            sum_list.append(val)
+            print_str += str(round(val, 4)) + " "
+        faulty_elements = [value > (mean(sum_list)*1.05) or value < (mean(sum_list)*0.95) for value in sum_list]
+        if True in faulty_elements:
+            print_str += "|| UNEVEN SPLIT"
+        else:
+            print_str += "|| EVEN SPLIT"
+        print(print_str)
