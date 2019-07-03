@@ -4,11 +4,11 @@ import pulp.solvers
 
 from anytree import Node
 from utils import print_location, print_location_adaptive
-TIME_OUT_SEC = 10
+
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
-                         param_num_nodes, param_query_ids, name, timeout_sec=TIME_OUT_SEC):
+                         param_num_nodes, param_query_ids, name, timeout_sec=30):
     epsilon_factor = 1000
 
     def objective():
@@ -116,9 +116,11 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
 
 class SolverNode(Node):
-    def __init__(self, name, **kwargs):
+    def __init__(self, name, timeout_secs=20, **kwargs):
         super().__init__(name, **kwargs)
+        self.timeout_secs = timeout_secs
         self.problem = None
+
 
     def solve(self):
         if not self.children:
@@ -128,14 +130,11 @@ class SolverNode(Node):
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
 
-        # we use the dynamicness of python to set an attribute here which will be accessed later.
-        # Not nice, but, oh well...
-
         solution, var_location, var_runnable, var_workshare, space = solve_split_adaptive(
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.timout())
+            self.name, self.timeout_secs)
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]
@@ -148,9 +147,3 @@ class SolverNode(Node):
             p.param_query_cost = query_cost_on_child
             self.children[c].problem = p
         return 0
-
-    def timout(self):
-        nr_decisions = len(self.root.descendants) - len(self.root.leaves) + 1
-        timout = TIME_OUT_SEC / nr_decisions
-        print('Node has timout:', timout)
-        return timout

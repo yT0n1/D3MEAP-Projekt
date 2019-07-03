@@ -1,7 +1,10 @@
+import time
+
 from anytree import RenderTree, DoubleStyle, LevelOrderIter
 
+from observation import Observation
 from solver_node import solve_split_adaptive
-from tree_generation import prime_factor_tree, binary_tree
+from tree_generation import prime_factor_tree, binary_tree, one_split_tree
 
 
 class Problem:
@@ -16,7 +19,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 16
+    param_num_nodes = 18
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -44,15 +47,10 @@ def main():
     s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
     s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
+    s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
+    s5 = solve_for_tree(one_split_tree(param_num_nodes),problem)
 
-    # The leave nodes present no problem and are not solved, thus the tree that is defined here
-    # has only three splits !!!!!
-
-    #
-    problem = solve_split_adaptive(param_fragment_size, param_queries, param_query_frequency,
-                                   param_query_cost, param_num_nodes, param_query_ids, 'complete')
-
-    print(s1, s2, s3, problem[4])
+    print(s1, s2, s3,s4, s5)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
@@ -61,13 +59,15 @@ def main():
 
 
 def solve_for_tree(tree_root, problem):
+    start = time.time()
     print('\nSolving Tree', tree_root.name)
     print(RenderTree(tree_root, style=DoubleStyle))
     tree_root.problem = problem
     total_space = [node.solve() for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
-    return sum(total_space)
+    end = time.time()
+    return Observation(sum(total_space), end-start, tree_root, False)
 
 
 if __name__ == '__main__':
