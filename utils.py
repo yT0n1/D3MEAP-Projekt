@@ -43,12 +43,13 @@ def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
         print(print_string)
     print(" ")
 
-def print_workload(var_workshare, param_num_nodes, param_query_workload):
+def print_workload(var_workshare, param_num_nodes, param_query_workload, query_ids):
     for workload in range(len(param_query_workload)):
         print_str = "Workload {}: ".format(workload)
         sum_list = []
         for n in range(param_num_nodes):
-            val = sum([var_workshare[q,n].varValue * param_query_workload[workload][q] for q in range(len(param_query_workload[0]))])
+            val = sum([var_workshare[q,n].varValue * param_query_workload[workload][q] for q in
+                       query_ids])
             sum_list.append(val)
             print_str += str(round(val, 4)) + " "
         faulty_elements = [value > (mean(sum_list)*1.05) or value < (mean(sum_list)*0.95) for value in sum_list]

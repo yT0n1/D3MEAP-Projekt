@@ -10,8 +10,9 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                          param_query_costs,
                          param_num_nodes, param_query_ids, name, workshare_split, timeout_sec):
     epsilon_factor = 1000
-    assert sum(workshare_split) == 1, 'Todo: this still needs to be implemented for asymmetric ' \
-                                      'trees! Comment out until done'
+    assert round(sum(workshare_split), 10) == 1, 'Todo: this still needs to be implemented for ' \
+                                                 'asymmetric ' \
+                                                 'trees! Comment out until done'
     assert len(workshare_split) == param_num_nodes
 
     def objective():
@@ -104,7 +105,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     print("")
     print("##### WORKLOAD #####")
-    print_workload(var_workshare, param_num_nodes, param_query_workload)
+    print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
 
     print("")
 
@@ -126,7 +127,7 @@ class SolverNode(Node):
     def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)
         self.problem = None
-
+        self.split_ratio = None
 
     def solve(self, timeout_secs=60):
         if not self.children:
@@ -140,7 +141,7 @@ class SolverNode(Node):
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, [], timeout_secs)
+            self.name, self.split_ratio, timeout_secs)
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]
@@ -153,3 +154,7 @@ class SolverNode(Node):
             p.param_query_cost = query_cost_on_child
             self.children[c].problem = p
         return 0
+
+    def set_split_ratio(self):
+        reachable_leaves = len(self.leaves)
+        self.split_ratio = [len(c.leaves) / reachable_leaves for c in self.children]

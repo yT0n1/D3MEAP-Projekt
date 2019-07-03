@@ -1,10 +1,15 @@
 import functools
 import operator
 
+import anytree
+from anytree import LevelOrderIter
 from sympy.ntheory import factorint
 import math
 
 from solver_node import SolverNode
+
+def add_split_ratios(root: SolverNode):
+    [node.set_split_ratio() for node in LevelOrderIter(root)]
 
 
 def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
@@ -23,6 +28,7 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     split_list.sort(reverse=reverse)
     parent = SolverNode("Root Prime " + str(split_list))
     append(parent, split_list)
+    add_split_ratios(parent)
     return parent
 
 
@@ -33,12 +39,14 @@ def binary_tree(nr_leaf_nodes):
     nr_children = int(math.log2(nr_leaf_nodes))
     children = [2] * nr_children
     append(parent, children)
+    add_split_ratios(parent)
     return parent
 
 
 def one_split_tree(nr_leaf_nodes):
     parent = SolverNode("Root One Split")
     append(parent, [nr_leaf_nodes])
+    add_split_ratios(parent)
     return parent
 
 
