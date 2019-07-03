@@ -35,9 +35,9 @@ def binary_tree(nr_leaf_nodes):
     return parent
 
 
-def append(parent, future_children):
-    if not future_children:
+def append(parent, splits):
+    if not splits:
         return
-    for i in range(future_children[0]):
-        n = SolverNode('l_'+str(len(future_children))+'_n_'+str(i), parent=parent)
-        append(n, future_children[1:])
+    for i in range(splits[0]):
+        n = SolverNode('l_' + str(len(splits)) + '_n_' + str(i), parent=parent)
+        append(n, splits[1:])
