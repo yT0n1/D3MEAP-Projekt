@@ -1,9 +1,7 @@
 import time
-
 from anytree import RenderTree, DoubleStyle, LevelOrderIter
 
 from observation import Observation
-from solver_node import solve_split_adaptive
 from tree_generation import prime_factor_tree, binary_tree, one_split_tree
 
 
@@ -19,7 +17,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 18
+    param_num_nodes = 10
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -36,6 +34,8 @@ def main():
                              [5, 1, 2, 1, 6, 3, 1, 9, 9]]
     param_query_ids = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     param_query_cost = [10, 20, 25, 15, 22, 33, 21, 11, 23]
+
+
 
     assert len(param_query_frequency[0]) == len(param_query_cost) \
            == len(param_query_ids) == len(param_queries)
@@ -58,20 +58,24 @@ def main():
            i in range(len(param_query_frequency))])
 
 
-def solve_for_tree(tree_root, problem):
+def solve_for_tree(tree_root, problem, timeout=None):
     start = time.time()
     print('\nSolving Tree', tree_root.name)
-    print(RenderTree(tree_root, style=DoubleStyle))
+    #print(RenderTree(tree_root, style=DoubleStyle))
     tree_root.problem = problem
-    total_space = [node.solve() for node in LevelOrderIter(tree_root)]
+    if timeout:
+        total_space = [node.solve(timeout) for node in LevelOrderIter(tree_root)]
+    else:
+        total_space = [node.solve() for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
     end = time.time()
-    return Observation(sum(total_space), end-start, tree_root, False)
+    runtime = end - start
+    aborted = runtime >= timeout if timeout else False
+    return Observation(sum(total_space), end - start, tree_root, aborted)
 
 
 if __name__ == '__main__':
     main()
-    TIME_OUT_SEC = 10
 
 # mingap und timelim

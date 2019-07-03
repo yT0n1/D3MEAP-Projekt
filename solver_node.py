@@ -8,9 +8,10 @@ from utils import print_location, print_location_adaptive, print_workload
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
-                         param_num_nodes, param_query_ids, name, workshare_split, timeout_sec=30):
+                         param_num_nodes, param_query_ids, name, workshare_split, timeout_sec):
     epsilon_factor = 1000
-    assert sum(workshare_split) == 1
+    assert sum(workshare_split) == 1, 'Todo: this still needs to be implemented for asymmetric ' \
+                                      'trees! Comment out until done'
     assert len(workshare_split) == param_num_nodes
 
     def objective():
@@ -122,13 +123,12 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
 
 class SolverNode(Node):
-    def __init__(self, name, timeout_secs=20, **kwargs):
+    def __init__(self, name, **kwargs):
         super().__init__(name, **kwargs)
-        self.timeout_secs = timeout_secs
         self.problem = None
 
 
-    def solve(self):
+    def solve(self, timeout_secs=60):
         if not self.children:
             mask = [0] * len(self.problem.param_fragment_size)
             for q in self.problem.param_query_ids:
@@ -140,7 +140,7 @@ class SolverNode(Node):
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.timeout_secs)
+            self.name, [], timeout_secs)
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]
