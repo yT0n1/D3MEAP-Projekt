@@ -55,7 +55,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
         for n in range(param_num_nodes):
             for w in range(len(param_query_workload)):
                 c = (sum([var_workshare[(q, n)] * param_query_workload[w][q] for q in
-                          param_query_ids]) / param_total_workload[w]) <= var_epsilon
+                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n]) <= var_epsilon
                 problem_instance += c
         return problem_instance
 
@@ -104,7 +104,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     print_location_adaptive(var_workshare, param_num_nodes, param_query_ids, False)
 
     print("")
-    print("##### WORKLOAD #####")
+    print("##### WORKLOAD PERCENTAGES #####")
     print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
 
     print("")
@@ -142,6 +142,7 @@ class SolverNode(Node):
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
             self.name, self.split_ratio, timeout_secs)
+
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]

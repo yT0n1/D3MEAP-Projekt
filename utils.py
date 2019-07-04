@@ -51,10 +51,7 @@ def print_workload(var_workshare, param_num_nodes, param_query_workload, query_i
             val = sum([var_workshare[q,n].varValue * param_query_workload[workload][q] for q in
                        query_ids])
             sum_list.append(val)
-            print_str += str(round(val, 4)) + " "
-        faulty_elements = [value > (mean(sum_list)*1.05) or value < (mean(sum_list)*0.95) for value in sum_list]
-        if True in faulty_elements:
-            print_str += "|| UNEVEN SPLIT"
-        else:
-            print_str += "|| EVEN SPLIT"
+        total_workload_sum = sum(sum_list)
+        for n in range(param_num_nodes):
+            print_str += str(round(sum_list[n]/total_workload_sum, 4)) + " "
         print(print_str)
