@@ -10,9 +10,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                          param_query_costs,
                          param_num_nodes, param_query_ids, name, workshare_split, timeout_sec):
     epsilon_factor = 1000
-    assert round(sum(workshare_split), 10) == 1, 'Todo: this still needs to be implemented for ' \
-                                                 'asymmetric ' \
-                                                 'trees! Comment out until done'
+    assert round(sum(workshare_split), 10) == 1
     assert len(workshare_split) == param_num_nodes
 
     def objective():

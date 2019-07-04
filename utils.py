@@ -55,3 +55,7 @@ def print_workload(var_workshare, param_num_nodes, param_query_workload, query_i
         for n in range(param_num_nodes):
             print_str += str(round(sum_list[n]/total_workload_sum, 4)) + " "
         print(print_str)
+
+# Convience function to auto-generate a fair splitting strategy
+def generate_equal_workshare_split_(num_nodes):
+    return [1/num_nodes for i in num_nodes]
