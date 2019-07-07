@@ -49,6 +49,17 @@ def one_split_tree(nr_leaf_nodes):
     add_split_ratios(parent)
     return parent
 
+def one_vs_all_split(nr_leaf_nodes):
+    parent = SolverNode("Root One Vs All Split")
+    parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
+    previous_level_node = parent
+    for i in range(1, nr_leaf_nodes):
+        one = SolverNode('One__n_' + str(i), parent=previous_level_node)
+        all = SolverNode('All_n_' + str(i), parent=previous_level_node)
+        if not i == nr_leaf_nodes-1:
+            all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
+        previous_level_node = all
+    return parent
 
 def append(parent, splits):
     if not splits:

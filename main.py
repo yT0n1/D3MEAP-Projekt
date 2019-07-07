@@ -2,7 +2,7 @@ import time
 from anytree import RenderTree, DoubleStyle, LevelOrderIter
 
 from observation import Observation
-from tree_generation import prime_factor_tree, binary_tree, one_split_tree
+from tree_generation import prime_factor_tree, binary_tree, one_split_tree, one_vs_all_split
 
 
 class Problem:
@@ -44,13 +44,15 @@ def main():
                       param_query_frequency, param_query_cost, param_query_ids,
                       len(param_query_ids))
 
-    s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
-    s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
-    s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
-    s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
-    s5 = solve_for_tree(one_split_tree(param_num_nodes),problem)
+    #s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
+    #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
+    #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
+    #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
+    #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem)
+    s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem)
 
-    print(s1, s2, s3,s4, s5)
+    #print(s1)#, s2, s3,s4, s5)
+    print(s6)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
