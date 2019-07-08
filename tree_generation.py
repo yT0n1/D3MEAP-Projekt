@@ -6,7 +6,6 @@ from anytree import LevelOrderIter, RenderTree, DoubleStyle
 from sympy.ntheory import factorint
 import math
 from anytree.exporter import DotExporter
-import graphviz
 
 from solver_node import SolverNode
 
@@ -37,7 +36,10 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     parent = SolverNode("Root Prime " + str(split_list))
     append(parent, split_list)
     add_split_ratios(parent)
-    DotExporter(parent, name="PrimeFactorGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
+    number_tree_nodes(parent)
+    number_tree_nodes(parent)
+    DotExporter(parent, name="PrimeFactorGraph", nodeattrfunc=design_node,
+                edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -49,6 +51,7 @@ def binary_tree(nr_leaf_nodes):
     children = [2] * nr_children
     append(parent, children)
     add_split_ratios(parent)
+    number_tree_nodes(parent)
     DotExporter(parent, name="Binary", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
@@ -57,6 +60,7 @@ def one_split_tree(nr_leaf_nodes):
     parent = SolverNode("Root One Split")
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
+    number_tree_nodes(parent)
     DotExporter(parent, name="OneSplitGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
@@ -72,6 +76,7 @@ def one_vs_all_split(nr_leaf_nodes):
         if not i == nr_leaf_nodes-1:
             all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
         previous_level_node = all
+    number_tree_nodes(parent)
     DotExporter(parent, name="OneVsAllGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
@@ -99,10 +104,33 @@ def approximate_tree(nr_leaves, split):
         parents_stack = list(root.leaves)
     #print_tree(root)
     add_split_ratios(root)
-    DotExporter(parent, name="AproximateGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
+    number_tree_nodes(root)
+    DotExporter(root, name="AproximateGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return root
 
+def node_name(node:SolverNode):
+    if not node.is_leaf:
+        name = node.name
+    else:
+        path_split = [p.name for p in node.path]
+        if len(path_split) > 2:
+            name = str(path_split[-2:])
+        else:
+            name = node.name
+    return name
+
+def number_tree_nodes(root):
+    depth = 0
+    count = 0
+    for num, node in enumerate(LevelOrderIter(root)):
+        if node.depth > depth:
+            count = 0
+            depth = node.depth
+
+        node.name = str(depth) + '_' + str(count)
+        count += 1
 
 def print_tree(root):
     print(RenderTree(root, style=DoubleStyle))
+
 

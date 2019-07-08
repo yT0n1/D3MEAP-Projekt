@@ -17,7 +17,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 8
+    param_num_nodes = 16
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -44,15 +44,15 @@ def main():
                       param_query_frequency, param_query_cost, param_query_ids,
                       len(param_query_ids))
 
-    #s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
+    s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
-    s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
+    #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
     #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
     #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
 
     #print(s1)#, s2, s3,s4, s5)
-    print(s4)
+    print(s1)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
