@@ -85,7 +85,7 @@ def approximate_tree(nr_leaves, split):
                 break
             append(parent, [do_split])
         parents_stack = list(root.leaves)
-    print_tree(root)
+    #print_tree(root)
     add_split_ratios(root)
     return root
 
@@ -93,6 +93,3 @@ def approximate_tree(nr_leaves, split):
 def print_tree(root):
     print(RenderTree(root, style=DoubleStyle))
 
-if __name__ == '__main__':
-    a = approximate_tree(7, 3)
-    pass
