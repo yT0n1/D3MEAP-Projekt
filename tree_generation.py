@@ -119,10 +119,12 @@ def node_name(node:SolverNode):
             name = node.name
     return name
 
-def number_tree_nodes(root):
+def number_tree_nodes(root:SolverNode):
     depth = 0
     count = 0
     for num, node in enumerate(LevelOrderIter(root)):
+        if node.is_root:
+            continue
         if node.depth > depth:
             count = 0
             depth = node.depth
