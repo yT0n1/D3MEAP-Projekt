@@ -2,11 +2,12 @@ import functools
 import operator
 
 import anytree
-from anytree import LevelOrderIter
+from anytree import LevelOrderIter, RenderTree, DoubleStyle
 from sympy.ntheory import factorint
 import math
 
 from solver_node import SolverNode
+
 
 def add_split_ratios(root: SolverNode):
     [node.set_split_ratio() for node in LevelOrderIter(root)]
@@ -49,17 +50,19 @@ def one_split_tree(nr_leaf_nodes):
     add_split_ratios(parent)
     return parent
 
+
 def one_vs_all_split(nr_leaf_nodes):
     parent = SolverNode("Root One Vs All Split")
-    parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
+    parent.split_ratio = [1 / nr_leaf_nodes, 1 - (1 / nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):
         one = SolverNode('One__n_' + str(i), parent=previous_level_node)
         all = SolverNode('All_n_' + str(i), parent=previous_level_node)
-        if not i == nr_leaf_nodes-1:
-            all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
+        if not i == nr_leaf_nodes - 1:
+            all.split_ratio = [1 / (nr_leaf_nodes - i), 1 - (1 / (nr_leaf_nodes - i))]
         previous_level_node = all
     return parent
+
 
 def append(parent, splits):
     if not splits:
@@ -67,3 +70,24 @@ def append(parent, splits):
     for i in range(splits[0]):
         n = SolverNode('l_' + str(len(splits)) + '_n_' + str(i), parent=parent)
         append(n, splits[1:])
+
+
+def approximate_tree(nr_leaves, split):
+    root = SolverNode("Approx: " + str(split))
+    parents_stack = [root]
+    while len(root.leaves) != nr_leaves:
+        while parents_stack:
+            missing_leaves = nr_leaves - len(root.leaves) + 1 # plus 1 because we loose the leave
+            # we are currently working on if we add new leaves
+            parent = parents_stack.pop(0)
+            do_split = split if split <= missing_leaves else missing_leaves
+            if do_split <= 1:
+                break
+            append(parent, [do_split])
+        parents_stack = list(root.leaves)
+    #print_tree(root)
+    return root
+
+
+def print_tree(root):
+    print(RenderTree(root, style=DoubleStyle))
