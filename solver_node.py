@@ -126,6 +126,7 @@ class SolverNode(Node):
         super().__init__(name, **kwargs)
         self.problem = None
         self.split_ratio = None
+        self.workshare_split = None
 
     def solve(self, timeout_secs=60):
         if not self.children:
@@ -140,7 +141,7 @@ class SolverNode(Node):
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
             self.name, self.split_ratio, timeout_secs)
-
+        self.workshare_split = var_workshare
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]

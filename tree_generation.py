@@ -132,6 +132,16 @@ def number_tree_nodes(root:SolverNode):
         node.name = str(depth) + '_' + str(count)
         count += 1
 
+def dot_export_actuall_workload(root: SolverNode):
+    def label_split(node, child):
+        should = 'label=' + str(round(node.split_ratio[node.children.index(child)], 2))
+
+
+    DotExporter(root, nodeattrfunc=design_node,
+                edgeattrfunc=label_split).to_picture(root.name+".png")
+
+
+
 def print_tree(root):
     print(RenderTree(root, style=DoubleStyle))
 
