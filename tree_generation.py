@@ -13,6 +13,12 @@ from solver_node import SolverNode
 def add_split_ratios(root: SolverNode):
     [node.set_split_ratio() for node in LevelOrderIter(root)]
 
+def design_node(node):
+    return "shape=box"
+
+def label_edges(node, child):
+    return 'label='+str(round(node.split_ratio[node.children.index(child)], 2))
+
 
 def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     tuples = factorint(nr_leaf_nodes).items()
@@ -31,6 +37,7 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     parent = SolverNode("Root Prime " + str(split_list))
     append(parent, split_list)
     add_split_ratios(parent)
+    DotExporter(parent, name="PrimeFactorGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -42,6 +49,7 @@ def binary_tree(nr_leaf_nodes):
     children = [2] * nr_children
     append(parent, children)
     add_split_ratios(parent)
+    DotExporter(parent, name="Binary", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -49,19 +57,12 @@ def one_split_tree(nr_leaf_nodes):
     parent = SolverNode("Root One Split")
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
+    DotExporter(parent, name="OneSplitGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
 
 def one_vs_all_split(nr_leaf_nodes):
-    def name_node(node):
-        return "shape=box"
-    def edgeattrfunc(node, child):
-        if "OneSide" in child.name:
-            return 'label='+str(round(node.split_ratio[0], 2))
-        else:
-            return 'label='+str(round(node.split_ratio[1], 2))
-
     parent = SolverNode("Root One Vs All Split")
     parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
     previous_level_node = parent
@@ -71,7 +72,7 @@ def one_vs_all_split(nr_leaf_nodes):
         if not i == nr_leaf_nodes-1:
             all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
         previous_level_node = all
-    DotExporter(parent, name="OneVsAllGraph", nodeattrfunc=name_node, edgeattrfunc=edgeattrfunc).to_picture("abc.png")
+    DotExporter(parent, name="OneVsAllGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -98,6 +99,7 @@ def approximate_tree(nr_leaves, split):
         parents_stack = list(root.leaves)
     #print_tree(root)
     add_split_ratios(root)
+    DotExporter(parent, name="AproximateGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return root
 
 
