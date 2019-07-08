@@ -5,9 +5,10 @@ import anytree
 from anytree import LevelOrderIter, RenderTree, DoubleStyle
 from sympy.ntheory import factorint
 import math
+from anytree.exporter import DotExporter
+import graphviz
 
 from solver_node import SolverNode
-
 
 def add_split_ratios(root: SolverNode):
     [node.set_split_ratio() for node in LevelOrderIter(root)]
@@ -51,16 +52,26 @@ def one_split_tree(nr_leaf_nodes):
     return parent
 
 
+
 def one_vs_all_split(nr_leaf_nodes):
+    def name_node(node):
+        return "shape=box"
+    def edgeattrfunc(node, child):
+        if "OneSide" in child.name:
+            return 'label='+str(round(node.split_ratio[0], 2))
+        else:
+            return 'label='+str(round(node.split_ratio[1], 2))
+
     parent = SolverNode("Root One Vs All Split")
-    parent.split_ratio = [1 / nr_leaf_nodes, 1 - (1 / nr_leaf_nodes)]
+    parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):
-        one = SolverNode('One__n_' + str(i), parent=previous_level_node)
-        all = SolverNode('All_n_' + str(i), parent=previous_level_node)
-        if not i == nr_leaf_nodes - 1:
-            all.split_ratio = [1 / (nr_leaf_nodes - i), 1 - (1 / (nr_leaf_nodes - i))]
+        one = SolverNode('OneSide_' + str(i), parent=previous_level_node)
+        all = SolverNode('AllSide_' + str(i), parent=previous_level_node)
+        if not i == nr_leaf_nodes-1:
+            all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
         previous_level_node = all
+    DotExporter(parent, name="OneVsAllGraph", nodeattrfunc=name_node, edgeattrfunc=edgeattrfunc).to_picture("abc.png")
     return parent
 
 
