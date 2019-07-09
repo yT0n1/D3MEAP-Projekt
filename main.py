@@ -20,7 +20,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 8
+    param_num_nodes = 4
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -51,25 +51,16 @@ def main():
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
     #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
+    #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
+    #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
+    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 2), problem)
+    s8 = solve_for_tree(binary_tree(param_num_nodes), problem)
+    #dot_export_actuall_workload(s7.tree)
 
-    # s51 = solve_for_tree(one_split_tree(param_num_nodes, False),problem)
-    # s5 = solve_for_tree(one_split_tree(param_num_nodes),problem)
-    # s52 = solve_for_tree(one_split_tree(param_num_nodes, False, True),problem)
-
-
-
-    s6 = solve_for_tree(binary_tree(param_num_nodes), problem, 2)
-    s8 = solve_for_tree(approximate_tree(param_num_nodes,2), problem, 2)
-
-    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
-    #dot_export_actuall_workload(s6.tree)
-    dot_export_actuall_workload(s8.tree)
-    dot_export_actuall_workload(s6.tree)
-
-
-    print(s6, s8)
+    #print(s1)#, s2, s3,s4, s5)
     #print(s4)
-    #automated_test(3)
+    #automated_test(2)
+    print(s8)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
