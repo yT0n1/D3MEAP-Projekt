@@ -44,6 +44,7 @@ def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
     print(" ")
 
 def print_workload(var_workshare, param_num_nodes, param_query_workload, query_ids):
+    workload_percentages = []
     for workload in range(len(param_query_workload)):
         print_str = "Workload {}: ".format(workload)
         sum_list = []
@@ -52,10 +53,23 @@ def print_workload(var_workshare, param_num_nodes, param_query_workload, query_i
                        query_ids])
             sum_list.append(val)
         total_workload_sum = sum(sum_list)
+        specific_workload_percentage = []
         for n in range(param_num_nodes):
+            specific_workload_percentage.append(sum_list[n]/total_workload_sum)
             print_str += str(round(sum_list[n]/total_workload_sum, 4)) + " "
+        workload_percentages.append(specific_workload_percentage)
         print(print_str)
+    return workload_percentages
 
 # Convience function to auto-generate a fair splitting strategy
 def generate_equal_workshare_split_(num_nodes):
     return [1/num_nodes for i in num_nodes]
+
+def derivation_from_worksplit(workload_percentages, workshare_split):
+    assert len(workload_percentages[0]) == len(workshare_split)
+    deviations = []
+    for workload in workload_percentages:
+        assert len(workload) == len(workshare_split)
+        sum_deviation = sum([abs(workload[i] - workshare_split[i]) for i in range(len(workload))])
+        deviations.append(sum_deviation)
+    return (sum(deviations) / len(workload_percentages))

@@ -50,15 +50,16 @@ def main():
     #s1 = solve_for_tree(prime_factor_tree(param_num_nodes), problem)
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
-    s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
+    #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
     #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
-    #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
-    s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
+    s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
+    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
     #dot_export_actuall_workload(s7.tree)
 
     #print(s1)#, s2, s3,s4, s5)
     #print(s4)
-    automated_test(5)
+    #automated_test(5)
+    print(s6)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
@@ -80,6 +81,7 @@ def solve_for_tree(tree_root, problem, timeout=None):
         total_space = [node.solve() for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
+    print('Total Deviation ', sum([node.workshare_deviation for node in LevelOrderIter(tree_root)]))
     end = time.time()
     runtime = end - start
     aborted = runtime >= timeout if timeout else False

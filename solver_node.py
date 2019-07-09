@@ -3,7 +3,7 @@ from pulp import *
 import pulp.solvers
 
 from anytree import Node
-from utils import print_location, print_location_adaptive, print_workload
+from utils import print_location, print_location_adaptive, print_workload, derivation_from_worksplit
 
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
@@ -103,7 +103,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     print("")
     print("##### WORKLOAD PERCENTAGES #####")
-    print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
+    workload_percentages = print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
 
     print("")
 
@@ -115,10 +115,11 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     print("Objective Value:", str(problem.objective.value() - epsilon_factor * var_epsilon.value()))
     print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
           "{})".format(str(float(1) / param_num_nodes)))
+    print('Deviation ', derivation_from_worksplit(workload_percentages, workshare_split))
     print('Nr. Vars:', problem.numVariables())
     print('Solved:', name, '\n\n\n')
     space_required = problem.objective.value() - epsilon_factor * var_epsilon.value()
-    return problem, var_location, var_runnable, var_workshare, space_required
+    return problem, var_location, var_runnable, var_workshare, space_required, workload_percentages
 
 
 class SolverNode(Node):
@@ -127,6 +128,7 @@ class SolverNode(Node):
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
+        self.workshare_deviation = 0
 
     def solve(self, timeout_secs=60):
         if not self.children:
@@ -136,12 +138,13 @@ class SolverNode(Node):
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
 
-        solution, var_location, var_runnable, var_workshare, space = solve_split_adaptive(
+        solution, var_location, var_runnable, var_workshare, space, workload_percentages = solve_split_adaptive(
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
             self.name, self.split_ratio, timeout_secs)
-        self.workshare_split = var_workshare
+        self.workshare_split = workload_percentages
+        self.workshare_deviation = derivation_from_worksplit(self.workshare_split, self.split_ratio)
         for c in range(len(self.children)):
             queries_on_child = [q for q in self.problem.param_query_ids
                                 if var_runnable[(q, c)].value() and var_workshare[(q, c)].value()]
