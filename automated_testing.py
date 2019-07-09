@@ -1,3 +1,4 @@
+import copy
 import random
 from statistics import median
 
@@ -25,21 +26,25 @@ def automated_test():
     timeout = 3
     num_epochs = 3
 
+    problems = []
+    for epoch in range(num_epochs):
+        param_num_fragments = random.sample(range(3, 10), 1)[0]
+        param_num_queries = random.sample(range(5, 10), 1)[0]
+
+        param_fragment_size = random.sample(range(1, 100), param_num_fragments)
+        param_queries = generate_queries(param_num_queries, param_num_fragments)
+        param_query_frequency = [random.sample(range(1, 100), param_num_queries) for i in range(3)]
+        param_query_cost = random.sample(range(1, 100), param_num_queries)
+        param_query_ids = [i for i in range(len(param_query_cost))]
+
+        problems.append(Problem(param_fragment_size, param_queries,
+                          param_query_frequency, param_query_cost, param_query_ids,
+                          len(param_query_ids)))
+
     for node_count in range(min_nodes, max_nodes+1):
         epoch_results = []
-        for epoch in range(num_epochs):
-            param_num_fragments = 7
-            param_num_queries = 7
-
-            param_fragment_size = random.sample(range(1, 100), param_num_fragments)
-            param_queries = generate_queries(param_num_queries, param_num_fragments)
-            param_query_frequency = [random.sample(range(1, 100), param_num_queries) for i in range(3)]
-            param_query_cost = random.sample(range(1, 100), param_num_queries)
-            param_query_ids = [i for i in range(len(param_query_cost))]
-
-            problem = Problem(param_fragment_size, param_queries,
-                              param_query_frequency, param_query_cost, param_query_ids,
-                              len(param_query_ids))
+        for proto_problem in problems:
+            problem = copy.deepcopy(proto_problem)
 
             s1 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout)
             s2 = solve_for_tree(prime_factor_tree(node_count, False, True), problem, timeout)
@@ -61,12 +66,13 @@ def automated_test():
 
     legend_labels = [strategy.name for strategy in total_results[0][0]]
     space_per_strategy = []
+    space_per_strategy_avg = []
     deviation_per_strategy = []
     time_per_strategy = []
 
     # Get the results which you want
     for node_level in total_results:
-        space_per_strategy.append([ median([node_level[i][j].space for i in range(len(node_level))]) for j in range(len(node_level[0]))])
+        space_per_strategy.append([median([node_level[i][j].space for i in range(len(node_level))]) for j in range(len(node_level[0]))])
         deviation_per_strategy.append([median([node_level[i][j].deviation for i in range(len(node_level))]) for j in range(len(node_level[0]))])
         time_per_strategy.append([median([node_level[i][j].time for i in range(len(node_level))]) for j in range(len(node_level[0]))])
 
