@@ -56,8 +56,8 @@ def binary_tree(nr_leaf_nodes):
     return parent
 
 
-def one_split_tree(nr_leaf_nodes):
-    parent = SolverNode("Root One Split")
+def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
+    parent = SolverNode("Root One Split", should_squeeze, use_normed)
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
     number_tree_nodes(parent)
@@ -135,6 +135,7 @@ def number_tree_nodes(root:SolverNode):
 def dot_export_actuall_workload(root: SolverNode):
     def label_split(node, child):
         should = 'label=' + str(round(node.split_ratio[node.children.index(child)], 2))
+        has = node.workshare_split
 
 
     DotExporter(root, nodeattrfunc=design_node,

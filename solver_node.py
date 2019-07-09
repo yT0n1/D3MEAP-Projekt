@@ -8,8 +8,9 @@ from utils import print_location, print_location_adaptive, print_workload, deriv
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
-                         param_num_nodes, param_query_ids, name, workshare_split, timeout_sec):
-    epsilon_factor = 1000
+                         param_num_nodes, param_query_ids, name, workshare_split, timeout_sec,
+                         should_squeeze=True, use_normed=False):
+    epsilon_factor = 100_000_000_100_000
     assert round(sum(workshare_split), 10) == 1
     assert len(workshare_split) == param_num_nodes
 
@@ -20,6 +21,21 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                 sum += var_location[(f, n)] * param_fragment_sizes[f]
         sum += epsilon_factor * var_epsilon
         return sum
+
+    def non_squeeze_objective():
+        sum = 0
+        for f in range(param_num_fragments):
+            for n in range(param_num_nodes):
+                sum += var_location[(f, n)] * param_fragment_sizes[f]
+        return sum
+
+    def normed_objective():
+        value = 0
+        for f in range(param_num_fragments):
+            for n in range(param_num_nodes):
+                value += (var_location[(f, n)] * param_fragment_sizes[f])/sum(param_fragment_sizes)
+        value += epsilon_factor * var_epsilon
+        return value
 
     def nb_1(problem_instance):
         for q in param_query_ids:
@@ -57,6 +73,15 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                 problem_instance += c
         return problem_instance
 
+    def nb_5_no_squeeze(problem_instance):
+        for n in range(param_num_nodes):
+            for w in range(len(param_query_workload)):
+                c = (sum([var_workshare[(q, n)] * param_query_workload[w][q] for q in
+                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n])\
+                    <= 1/param_num_nodes
+                problem_instance += c
+        return problem_instance
+
     problem = LpProblem("replication", LpMinimize)
 
     param_num_fragments = len(param_fragment_sizes)
@@ -78,12 +103,20 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                                      cat='Continuous')
     var_epsilon = LpVariable(name="epsilon", lowBound=0, cat='Continuous')
 
-    problem += objective()
+    if should_squeeze:
+        problem += objective()
+        problem = nb_5(problem)
+    elif use_normed:
+        problem += normed_objective()
+        problem = nb_5(problem)
+    else:
+        problem += non_squeeze_objective()
+        problem = nb_5_no_squeeze(problem)
     problem = nb_1(problem)
     problem = nb_2(problem)
     problem = nb_3(problem)
     problem = nb_4(problem)
-    problem = nb_5(problem)
+
 
     solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec)])
     solver.actualSolve(problem)
@@ -112,26 +145,36 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
         sum_workload += var_workshare[loc].varValue
 
     print("Sum Workload: ", str(sum_workload))
-    print("Objective Value:", str(problem.objective.value() - epsilon_factor * var_epsilon.value()))
-    print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
-          "{})".format(str(float(1) / param_num_nodes)))
+    if should_squeeze:
+        print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
+              "{})".format(str(float(1) / param_num_nodes)))
+        space_required = problem.objective.value() - epsilon_factor * var_epsilon.value()
+    elif use_normed:
+        print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
+              "{})".format(str(float(1) / param_num_nodes)))
+        space_required = (problem.objective.value() - epsilon_factor * var_epsilon.value()) * sum(param_fragment_sizes)
+    else:
+        space_required = problem.objective.value()
+    print("Objective Value:", str(space_required))
+
     print('Deviation ', derivation_from_worksplit(workload_percentages, workshare_split))
     print('Nr. Vars:', problem.numVariables())
     print('Solved:', name, '\n\n\n')
-    space_required = problem.objective.value() - epsilon_factor * var_epsilon.value()
     return problem, var_location, var_runnable, var_workshare, space_required, workload_percentages
 
 
 class SolverNode(Node):
-    def __init__(self, name, **kwargs):
-        super().__init__(name, **kwargs)
+    def __init__(self, name, should_squeeze=True, use_normed=False, **kwargs):
+        super().__init__(name,  **kwargs)
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
+        self.should_squeeze = should_squeeze
+        self.use_normed = use_normed
         self.workshare_deviation = 0
 
     def solve(self, timeout_secs=60):
-        if not self.children:
+        if self.is_leaf:
             mask = [0] * len(self.problem.param_fragment_size)
             for q in self.problem.param_query_ids:
                 mask = [a | b for a, b in zip(mask, self.problem.param_queries[q])]
@@ -142,7 +185,7 @@ class SolverNode(Node):
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.split_ratio, timeout_secs)
+            self.name, self.split_ratio, timeout_secs, self.should_squeeze, self.use_normed)
         self.workshare_split = workload_percentages
         self.workshare_deviation = derivation_from_worksplit(self.workshare_split, self.split_ratio)
         for c in range(len(self.children)):

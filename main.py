@@ -51,15 +51,20 @@ def main():
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
     #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
-    #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
-    s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
+
+    s51 = solve_for_tree(one_split_tree(param_num_nodes, False),problem)
+    s5 = solve_for_tree(one_split_tree(param_num_nodes),problem)
+    s52 = solve_for_tree(one_split_tree(param_num_nodes, False, True),problem)
+
+
+
+    #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
     #s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
     #dot_export_actuall_workload(s7.tree)
 
-    #print(s1)#, s2, s3,s4, s5)
+    print(s51, s5, s52)
     #print(s4)
-    automated_test(3)
-    print(s6)
+    #automated_test(3)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
