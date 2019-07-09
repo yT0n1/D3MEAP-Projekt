@@ -122,7 +122,10 @@ def number_tree_nodes(root: SolverNode):
 def dot_export_actuall_workload(root: SolverNode):
     def label_split(node, child):
         should = str(round(node.split_ratio[node.children.index(child)], 2))
-        has = str(round(mean(ws[node.children.index(child)] for ws in node.workshare_split), 2))
+        if node.workshare_split:
+            has = str(round(mean(ws[node.children.index(child)] for ws in node.workshare_split), 2))
+        else:
+            has = "-"
         return 'label="' + should + ' | ' + has + '"'
 
     DotExporter(root, nodeattrfunc=design_node,

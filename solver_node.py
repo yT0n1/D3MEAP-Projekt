@@ -171,7 +171,7 @@ class SolverNode(Node):
         self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
-        self.epsilon_factor = 1_000
+        self.epsilon_factor = 10
 
     def solve(self, timeout_secs=60):
         if self.is_leaf:
@@ -180,7 +180,12 @@ class SolverNode(Node):
                 mask = [a | b for a, b in zip(mask, self.problem.param_queries[q])]
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
-
+        elif not self.problem.param_query_ids:
+            for c in self.children:
+                p = copy.deepcopy(self.problem)
+                self.workshare_split = []
+                c.problem = p
+            return 0
         solution, var_location, var_runnable, var_workshare, space, workload_percentages = \
             solve_split_adaptive(
             self.problem.param_fragment_size, self.problem.param_queries,

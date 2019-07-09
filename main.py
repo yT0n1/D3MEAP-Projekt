@@ -20,7 +20,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 4
+    param_num_nodes = 8
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
