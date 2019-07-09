@@ -37,7 +37,7 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
         split_list = [[prime] * times for prime, times in tuples]
         split_list = functools.reduce(operator.iconcat, split_list, [])
     split_list.sort(reverse=reverse)
-    parent = SolverNode("Root Prime " + str(split_list))
+    parent = SolverNode("Prime " + str(split_list))
     append(parent, split_list)
     add_split_ratios(parent)
     number_tree_nodes(parent)
@@ -47,7 +47,7 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
 def binary_tree(nr_leaf_nodes):
     assert math.log2(nr_leaf_nodes).is_integer(), "Number of leaves needs to be devidable by a " \
                                                   "power of 2"
-    parent = SolverNode("Root Binary")
+    parent = SolverNode("Binary")
     nr_children = int(math.log2(nr_leaf_nodes))
     children = [2] * nr_children
     append(parent, children)
@@ -57,7 +57,7 @@ def binary_tree(nr_leaf_nodes):
 
 
 def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
-    parent = SolverNode("Root One Split", should_squeeze, use_normed)
+    parent = SolverNode("One Split", should_squeeze, use_normed)
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
     number_tree_nodes(parent)
@@ -65,7 +65,7 @@ def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
 
 
 def one_vs_all_split(nr_leaf_nodes, squeeze=True):
-    parent = SolverNode("Root One Vs All Split", squeeze)
+    parent = SolverNode("One Vs All Split", squeeze)
     parent.split_ratio = [1 / nr_leaf_nodes, 1 - (1 / nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):

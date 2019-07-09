@@ -164,7 +164,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
 class SolverNode(Node):
     def __init__(self, name, should_squeeze=True, use_normed=False, **kwargs):
-        super().__init__(name,  **kwargs)
+        super().__init__(name, **kwargs)
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
