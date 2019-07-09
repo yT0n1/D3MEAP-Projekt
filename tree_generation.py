@@ -119,7 +119,7 @@ def number_tree_nodes(root: SolverNode):
         count += 1
 
 
-def dot_export_actuall_workload(root: SolverNode):
+def dot_export_actual_workload(root: SolverNode):
     def label_split(node, child):
         should = str(round(node.split_ratio[node.children.index(child)], 2))
         if node.workshare_split:

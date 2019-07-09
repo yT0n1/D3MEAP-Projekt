@@ -4,7 +4,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from playground import solve_for_tree, Problem
-from tree_generation import one_split_tree, one_vs_all_split, approximate_tree
+from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
 
 
 def generate_queries(num_queries, num_fragments):
@@ -16,13 +16,14 @@ def generate_queries(num_queries, num_fragments):
         queries.append(temp_list)
     return queries
 
-def automated_test(num_epochs):
+def automated_test():
     total_results = []
 
     # Configuration
-    num_strategies = 2
     min_nodes = 3
-    max_nodes = 10
+    max_nodes = 5
+    timeout = 5
+    num_epochs = 2
 
     for node_count in range(min_nodes, max_nodes+1):
         epoch_results = []
@@ -40,19 +41,22 @@ def automated_test(num_epochs):
                               param_query_frequency, param_query_cost, param_query_ids,
                               len(param_query_ids))
 
-            #s1 = solve_for_tree(prime_factor_tree(node_count, True, True), problem)
-            s2 = solve_for_tree(one_split_tree(node_count), problem, 5)
-            s3 = solve_for_tree(one_vs_all_split(node_count), problem, 5)
+            s1 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout)
+            s2 = solve_for_tree(prime_factor_tree(node_count, False, True), problem, timeout)
+            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout)
+            s4 = solve_for_tree(prime_factor_tree(node_count, True, True), problem, timeout)
 
-            s4 = solve_for_tree(approximate_tree(node_count, 2), problem)
-            s5 = solve_for_tree(approximate_tree(node_count, 3), problem)
-            s6 = solve_for_tree(approximate_tree(node_count, 4), problem)
-            s7 = solve_for_tree(approximate_tree(node_count, 5), problem)
-            s8 = solve_for_tree(approximate_tree(node_count, 6), problem)
+            s5 = solve_for_tree(one_split_tree(node_count), problem, timeout)
 
+            s6 = solve_for_tree(one_vs_all_split(node_count), problem, timeout)
 
+            s7 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout)
+            s8 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout)
+            s9 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout)
+            s10 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout)
+            s11 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout)
 
-            epoch_results.append([s2,s3,s4,s5,s6,s7,s8])
+            epoch_results.append([s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11])
         total_results.append(epoch_results)
 
     legend_labels = [strategy.name for strategy in total_results[0][0]]
@@ -70,7 +74,7 @@ def automated_test(num_epochs):
     space_plot_data = []
     deviation_plot_data = []
     time_plot_data = []
-    for j in range(num_strategies):
+    for j in range(len(legend_labels)):
         space_plot_data.append([space_per_strategy[i][j] for i in range(len(space_per_strategy))])
         deviation_plot_data.append([deviation_per_strategy[i][j] for i in range(len(deviation_per_strategy))])
         time_plot_data.append([time_per_strategy[i][j] for i in range(len(time_per_strategy))])
@@ -115,4 +119,4 @@ def automated_test(num_epochs):
 
 
 if __name__ == '__main__':
-    automated_test(4)
+    automated_test()

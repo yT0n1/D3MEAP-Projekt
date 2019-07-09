@@ -4,7 +4,7 @@ from anytree import RenderTree, DoubleStyle, LevelOrderIter
 
 from observation import Observation
 from tree_generation import prime_factor_tree, binary_tree, one_split_tree, one_vs_all_split, \
-    approximate_tree, dot_export_actuall_workload
+    approximate_tree, dot_export_actual_workload
 
 
 class Problem:
@@ -54,7 +54,7 @@ def main():
     #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
     #s7 = solve_for_tree(approximate_tree(param_num_nodes, 2), problem)
     s8 = solve_for_tree(binary_tree(param_num_nodes), problem)
-    #dot_export_actuall_workload(s7.tree)
+    dot_export_actual_workload(s8.tree)
 
     #print(s1)#, s2, s3,s4, s5)
     #print(s4)

@@ -181,6 +181,7 @@ class SolverNode(Node):
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
         elif not self.problem.param_query_ids:
+            print("Node Skipped: ",self.name)
             for c in self.children:
                 p = copy.deepcopy(self.problem)
                 self.workshare_split = []
