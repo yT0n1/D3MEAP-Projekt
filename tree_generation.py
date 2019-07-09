@@ -10,14 +10,17 @@ from anytree.exporter import DotExporter
 
 from solver_node import SolverNode
 
+
 def add_split_ratios(root: SolverNode):
     [node.set_split_ratio() for node in LevelOrderIter(root)]
+
 
 def design_node(node):
     return "shape=box"
 
+
 def label_edges(node, child):
-    return 'label='+str(round(node.split_ratio[node.children.index(child)], 2))
+    return 'label=' + str(round(node.split_ratio[node.children.index(child)], 2))
 
 
 def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
@@ -38,9 +41,6 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     append(parent, split_list)
     add_split_ratios(parent)
     number_tree_nodes(parent)
-    number_tree_nodes(parent)
-    DotExporter(parent, name="PrimeFactorGraph", nodeattrfunc=design_node,
-                edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -53,7 +53,6 @@ def binary_tree(nr_leaf_nodes):
     append(parent, children)
     add_split_ratios(parent)
     number_tree_nodes(parent)
-    DotExporter(parent, name="Binary", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -62,23 +61,20 @@ def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
     number_tree_nodes(parent)
-    DotExporter(parent, name="OneSplitGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
-
 
 
 def one_vs_all_split(nr_leaf_nodes, squeeze=True):
     parent = SolverNode("Root One Vs All Split", squeeze)
-    parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
+    parent.split_ratio = [1 / nr_leaf_nodes, 1 - (1 / nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):
         one = SolverNode('OneSide_' + str(i), parent=previous_level_node)
         all = SolverNode('AllSide_' + str(i), parent=previous_level_node)
-        if not i == nr_leaf_nodes-1:
-            all.split_ratio = [1/(nr_leaf_nodes-i), 1 - (1/(nr_leaf_nodes-i))]
+        if not i == nr_leaf_nodes - 1:
+            all.split_ratio = [1 / (nr_leaf_nodes - i), 1 - (1 / (nr_leaf_nodes - i))]
         previous_level_node = all
     number_tree_nodes(parent)
-    DotExporter(parent, name="OneVsAllGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return parent
 
 
@@ -95,7 +91,7 @@ def approximate_tree(nr_leaves, split):
     parents_stack = [root]
     while len(root.leaves) != nr_leaves:
         while parents_stack:
-            missing_leaves = nr_leaves - len(root.leaves) + 1 # plus 1 because we loose the leave
+            missing_leaves = nr_leaves - len(root.leaves) + 1  # plus 1 because we loose the leave
             # we are currently working on if we add new leaves
             parent = parents_stack.pop(0)
             do_split = split if split <= missing_leaves else missing_leaves
@@ -103,24 +99,13 @@ def approximate_tree(nr_leaves, split):
                 break
             append(parent, [do_split])
         parents_stack = list(root.leaves)
-    #print_tree(root)
+    # print_tree(root)
     add_split_ratios(root)
     number_tree_nodes(root)
-    DotExporter(root, name="AproximateGraph", nodeattrfunc=design_node, edgeattrfunc=label_edges).to_picture("abc.png")
     return root
 
-def node_name(node:SolverNode):
-    if not node.is_leaf:
-        name = node.name
-    else:
-        path_split = [p.name for p in node.path]
-        if len(path_split) > 2:
-            name = str(path_split[-2:])
-        else:
-            name = node.name
-    return name
 
-def number_tree_nodes(root:SolverNode):
+def number_tree_nodes(root: SolverNode):
     depth = 0
     count = 0
     for num, node in enumerate(LevelOrderIter(root)):
@@ -133,18 +118,16 @@ def number_tree_nodes(root:SolverNode):
         node.name = str(depth) + '_' + str(count)
         count += 1
 
+
 def dot_export_actuall_workload(root: SolverNode):
     def label_split(node, child):
         should = str(round(node.split_ratio[node.children.index(child)], 2))
-        has = str(round(mean(ws[node.children.index(child)] for ws in node.workshare_split),2))
-        return 'label="' + should + ' | ' + has+'"'
+        has = str(round(mean(ws[node.children.index(child)] for ws in node.workshare_split), 2))
+        return 'label="' + should + ' | ' + has + '"'
 
     DotExporter(root, nodeattrfunc=design_node,
-                edgeattrfunc=label_split).to_picture(root.name+".png")
-
+                edgeattrfunc=label_split).to_picture(root.name + ".png")
 
 
 def print_tree(root):
     print(RenderTree(root, style=DoubleStyle))
-
-

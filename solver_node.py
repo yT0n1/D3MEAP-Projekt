@@ -9,8 +9,8 @@ from utils import print_location, print_location_adaptive, print_workload, deriv
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
                          param_query_costs,
                          param_num_nodes, param_query_ids, name, workshare_split, timeout_sec,
+                         epsilon_factor,
                          should_squeeze=True, use_normed=False):
-    epsilon_factor = 100_000_000_100_000
     assert round(sum(workshare_split), 10) == 1
     assert len(workshare_split) == param_num_nodes
 
@@ -69,7 +69,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
         for n in range(param_num_nodes):
             for w in range(len(param_query_workload)):
                 c = (sum([var_workshare[(q, n)] * param_query_workload[w][q] for q in
-                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n]) <= var_epsilon
+                          param_query_ids]) / param_total_workload[w])  <= var_epsilon
                 problem_instance += c
         return problem_instance
 
@@ -100,7 +100,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                                     upBound=1, cat='Integer')
     var_workshare = LpVariable.dicts(name="workshare", indexs=workshare_dict_index, lowBound=0,
                                      cat='Continuous')
-    var_epsilon = LpVariable(name="epsilon", lowBound=0, cat='Continuous')
+    var_epsilon = LpVariable(name="epsilon", lowBound=0, upBound=1, cat='Continuous')
 
     if should_squeeze:
         problem += objective()
@@ -171,6 +171,7 @@ class SolverNode(Node):
         self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
+        self.epsilon_factor = 1_000
 
     def solve(self, timeout_secs=60):
         if self.is_leaf:
@@ -180,12 +181,15 @@ class SolverNode(Node):
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
 
-        solution, var_location, var_runnable, var_workshare, space, workload_percentages = solve_split_adaptive(
+        solution, var_location, var_runnable, var_workshare, space, workload_percentages = \
+            solve_split_adaptive(
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.split_ratio, timeout_secs, self.root.should_squeeze,
+            self.name, self.split_ratio, timeout_secs, self.root.epsilon_factor,
+            self.root.should_squeeze,
             self.root.use_normed)
+
         self.workshare_split = workload_percentages
         self.workshare_deviation = derivation_from_worksplit(self.workshare_split, self.split_ratio)
         for c in range(len(self.children)):
