@@ -81,12 +81,13 @@ def solve_for_tree(tree_root, problem, timeout=None):
         total_space = [node.solve() for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
-    print('Total Deviation ', sum([node.workshare_deviation for node in LevelOrderIter(tree_root)]))
+    total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])
+    print('Total Deviation ',total_deviation)
     end = time.time()
     runtime = end - start
     aborted = runtime >= timeout if timeout else False
     calculate_diversion_from_optimum(tree_root)
-    return Observation(sum(total_space), end - start, tree_root, aborted)
+    return Observation(sum(total_space), end - start, tree_root, aborted, total_deviation)
 
 if __name__ == '__main__':
     main()
