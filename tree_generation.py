@@ -26,9 +26,9 @@ def label_edges(node, child):
 def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     tuples = factorint(nr_leaf_nodes).items()
     if combine:
-        if len(tuples) == 1:
+        if len(tuples) == 1 and list(tuples)[0][1] != 1:
             # if we only have one prime number doing the power of it will be the exact same as the
-            # default split, thus we leave one out
+            # default split, thus we leave one out, unless the number is a prime number itself
             prime, times = list(tuples)[0]
             split_list = [prime ** (times - 1), prime]
         else:
@@ -37,7 +37,10 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
         split_list = [[prime] * times for prime, times in tuples]
         split_list = functools.reduce(operator.iconcat, split_list, [])
     split_list.sort(reverse=reverse)
-    parent = SolverNode("Prime " + str(split_list))
+    name = ''
+    name += ' combined' if combine else ''
+    name += ' reversed' if reverse else ''
+    parent = SolverNode("Prime " + str(split_list) + name)
     append(parent, split_list)
     add_split_ratios(parent)
     number_tree_nodes(parent)
