@@ -58,7 +58,7 @@ def main():
 
     #print(s1)#, s2, s3,s4, s5)
     #print(s4)
-    #automated_test(5)
+    automated_test(3)
     print(s6)
 
     print('Minimum possible would be:', sum(param_fragment_size))
@@ -66,9 +66,6 @@ def main():
           [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for
            i in range(len(param_query_frequency))])
 
-def calculate_diversion_from_optimum(root_node):
-    for node in root_node.leaves:
-        pass
 
 def solve_for_tree(tree_root, problem, timeout=None):
     start = time.time()
@@ -86,8 +83,7 @@ def solve_for_tree(tree_root, problem, timeout=None):
     end = time.time()
     runtime = end - start
     aborted = runtime >= timeout if timeout else False
-    calculate_diversion_from_optimum(tree_root)
-    return Observation(sum(total_space), end - start, tree_root, aborted, total_deviation)
+    return Observation(sum(total_space), end - start, tree_root, aborted, total_deviation, tree_root.name)
 
 if __name__ == '__main__':
     main()
