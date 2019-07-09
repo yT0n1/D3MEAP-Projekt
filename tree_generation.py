@@ -1,5 +1,6 @@
 import functools
 import operator
+from statistics import mean
 
 import anytree
 from anytree import LevelOrderIter, RenderTree, DoubleStyle
@@ -134,9 +135,9 @@ def number_tree_nodes(root:SolverNode):
 
 def dot_export_actuall_workload(root: SolverNode):
     def label_split(node, child):
-        should = 'label=' + str(round(node.split_ratio[node.children.index(child)], 2))
-        has = node.workshare_split
-
+        should = str(round(node.split_ratio[node.children.index(child)], 2))
+        has = str(round(mean(ws[node.children.index(child)] for ws in node.workshare_split),2))
+        return 'label="' + should + ' | ' + has+'"'
 
     DotExporter(root, nodeattrfunc=design_node,
                 edgeattrfunc=label_split).to_picture(root.name+".png")

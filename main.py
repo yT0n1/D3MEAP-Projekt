@@ -20,7 +20,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 4
+    param_num_nodes = 8
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -59,10 +59,13 @@ def main():
 
 
     s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
-    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
-    #dot_export_actuall_workload(s7.tree)
+    s8 = solve_for_tree(one_vs_all_split(param_num_nodes, False), problem, 2)
 
-    print(s51, s5, s52, s6)
+    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 5), problem)
+    #dot_export_actuall_workload(s6.tree)
+    dot_export_actuall_workload(s8.tree)
+
+    print(s6, s8)
     #print(s4)
     #automated_test(3)
 
