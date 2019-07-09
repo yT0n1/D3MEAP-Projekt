@@ -1,6 +1,6 @@
 import random
+from statistics import median
 
-import matplotlib
 import matplotlib.pyplot as plt
 
 from playground import solve_for_tree, Problem
@@ -20,10 +20,10 @@ def automated_test():
     total_results = []
 
     # Configuration
-    min_nodes = 3
-    max_nodes = 5
-    timeout = 5
-    num_epochs = 2
+    min_nodes = 2
+    max_nodes = 7
+    timeout = 3
+    num_epochs = 3
 
     for node_count in range(min_nodes, max_nodes+1):
         epoch_results = []
@@ -66,9 +66,9 @@ def automated_test():
 
     # Get the results which you want
     for node_level in total_results:
-        space_per_strategy.append([sum([node_level[i][j].space for i in range(len(node_level))]) / num_epochs for j in range(len(node_level[0]))])
-        deviation_per_strategy.append([sum([node_level[i][j].deviation for i in range(len(node_level))]) / num_epochs for j in range(len(node_level[0]))])
-        time_per_strategy.append([sum([node_level[i][j].time for i in range(len(node_level))]) / num_epochs for j in range(len(node_level[0]))])
+        space_per_strategy.append([ median([node_level[i][j].space for i in range(len(node_level))]) for j in range(len(node_level[0]))])
+        deviation_per_strategy.append([median([node_level[i][j].deviation for i in range(len(node_level))]) for j in range(len(node_level[0]))])
+        time_per_strategy.append([median([node_level[i][j].time for i in range(len(node_level))]) for j in range(len(node_level[0]))])
 
     # Reformat Lists
     space_plot_data = []
