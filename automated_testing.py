@@ -5,7 +5,8 @@ from statistics import median
 import matplotlib.pyplot as plt
 
 from playground import solve_for_tree, Problem
-from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
+from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree, \
+    dot_export_actual_workload
 
 
 def generate_queries(num_queries, num_fragments):
@@ -21,8 +22,8 @@ def automated_test():
     total_results = []
 
     # Configuration
-    min_nodes = 2
-    max_nodes = 7
+    min_nodes = 4
+    max_nodes = 12
     timeout = 3
     num_epochs = 3
 
@@ -54,6 +55,7 @@ def automated_test():
             s5 = solve_for_tree(one_split_tree(node_count), problem, timeout)
 
             s6 = solve_for_tree(one_vs_all_split(node_count), problem, timeout)
+            dot_export_actual_workload(s6.tree, str(node_count))
 
             s7 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout)
             s8 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout)

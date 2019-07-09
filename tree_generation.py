@@ -122,7 +122,7 @@ def number_tree_nodes(root: SolverNode):
         count += 1
 
 
-def dot_export_actual_workload(root: SolverNode):
+def dot_export_actual_workload(root: SolverNode, name_appendix=''):
     def label_split(node, child):
         should = str(round(node.split_ratio[node.children.index(child)], 2))
         if node.workshare_split:
@@ -132,7 +132,7 @@ def dot_export_actual_workload(root: SolverNode):
         return 'label="' + should + ' | ' + has + '"'
 
     DotExporter(root, nodeattrfunc=design_node,
-                edgeattrfunc=label_split).to_picture(root.name + ".png")
+                edgeattrfunc=label_split).to_picture(root.name + name_appendix + ".png")
 
 
 def print_tree(root):
