@@ -66,8 +66,8 @@ def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
 
 
 
-def one_vs_all_split(nr_leaf_nodes):
-    parent = SolverNode("Root One Vs All Split")
+def one_vs_all_split(nr_leaf_nodes, squeeze=True):
+    parent = SolverNode("Root One Vs All Split", squeeze)
     parent.split_ratio = [1/nr_leaf_nodes, 1 - (1/nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):

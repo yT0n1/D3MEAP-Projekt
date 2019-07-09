@@ -75,10 +75,9 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     def nb_5_no_squeeze(problem_instance):
         for n in range(param_num_nodes):
-            for w in range(len(param_query_workload)):
-                c = (sum([var_workshare[(q, n)] * param_query_workload[w][q] for q in
-                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n])\
-                    <= 1/param_num_nodes
+            for w, qw in enumerate(param_query_workload):
+                c = (sum([var_workshare[(q, n)] * qw[q] for q in
+                          param_query_ids]) / param_total_workload[w]) == workshare_split[n]
                 problem_instance += c
         return problem_instance
 
@@ -185,7 +184,8 @@ class SolverNode(Node):
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.split_ratio, timeout_secs, self.should_squeeze, self.use_normed)
+            self.name, self.split_ratio, timeout_secs, self.root.should_squeeze,
+            self.root.use_normed)
         self.workshare_split = workload_percentages
         self.workshare_deviation = derivation_from_worksplit(self.workshare_split, self.split_ratio)
         for c in range(len(self.children)):
