@@ -3,7 +3,7 @@ import random
 import matplotlib
 import matplotlib.pyplot as plt
 
-from main import solve_for_tree, Problem
+from playground import solve_for_tree, Problem
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree
 
 
@@ -114,4 +114,5 @@ def automated_test(num_epochs):
 
 
 
-
+if __name__ == '__main__':
+    automated_test(4)

@@ -2,7 +2,6 @@ import random
 import time
 from anytree import RenderTree, DoubleStyle, LevelOrderIter
 
-from automated_testing import *
 from observation import Observation
 from tree_generation import prime_factor_tree, binary_tree, one_split_tree, one_vs_all_split, \
     approximate_tree, dot_export_actuall_workload

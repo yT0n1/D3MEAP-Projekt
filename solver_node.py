@@ -171,7 +171,7 @@ class SolverNode(Node):
         self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
-        self.epsilon_factor = 10
+        self.epsilon_factor = 10_000
 
     def solve(self, timeout_secs=60):
         if self.is_leaf:
