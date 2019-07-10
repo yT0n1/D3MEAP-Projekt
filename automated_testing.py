@@ -1,12 +1,13 @@
 import copy
 import random
 from statistics import median
-
 import matplotlib.pyplot as plt
 
 from playground import solve_for_tree, Problem
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree, \
     dot_export_actual_workload
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 300
 
 
 def generate_queries(num_queries, num_fragments):
@@ -15,6 +16,7 @@ def generate_queries(num_queries, num_fragments):
         temp_list = []
         for j in range(num_fragments):
             temp_list.append(random.choice([0, 1]))
+            #temp_list.append(round(0.3 * random.uniform(0, 1)))
         queries.append(temp_list)
     return queries
 
@@ -22,20 +24,20 @@ def automated_test():
     total_results = []
 
     # Configuration
-    min_nodes = 2
-    max_nodes = 30
-    timeout = 15
-    num_epochs = 4
+    min_nodes = 10
+    max_nodes = 12
+    timeout = 5
+    num_epochs = 1
 
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(3, 10), 1)[0]
-        param_num_queries = random.sample(range(5, 10), 1)[0]
+        param_num_fragments = random.sample(range(300, 600), 1)[0]
+        param_num_queries = random.sample(range(10, 20), 1)[0]
 
-        param_fragment_size = random.sample(range(1, 100), param_num_fragments)
+        param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
         param_queries = generate_queries(param_num_queries, param_num_fragments)
-        param_query_frequency = [random.sample(range(1, 100), param_num_queries) for i in range(3)]
-        param_query_cost = random.sample(range(1, 100), param_num_queries)
+        param_query_frequency = [random.choices(range(1, 100), k=param_num_queries) for i in range(3)]
+        param_query_cost = random.choices(range(1, 100), k=param_num_queries)
         param_query_ids = [i for i in range(len(param_query_cost))]
 
         problems.append(Problem(param_fragment_size, param_queries,
@@ -47,23 +49,21 @@ def automated_test():
         for proto_problem in problems:
             problem = copy.deepcopy(proto_problem)
 
-            s1 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout)
-            s2 = solve_for_tree(prime_factor_tree(node_count, False, True), problem, timeout)
-            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout)
-            s4 = solve_for_tree(prime_factor_tree(node_count, True, True), problem, timeout)
+            s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            s2 = solve_for_tree(one_split_tree(node_count), problem, 30)
 
-            s5 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            #s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout)
+            #s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout)
 
-            s6 = solve_for_tree(one_vs_all_split(node_count), problem, timeout)
-            dot_export_actual_workload(s6.tree, str(node_count))
+            #s4 = solve_for_tree(one_vs_all_split(node_count), problem, timeout)
 
-            s7 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout)
-            s8 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout)
-            s9 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout)
-            s10 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout)
-            s11 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout)
+            #s5 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout)
+            #s6 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout)
+            #s7 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout)
+            #s8 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout)
+            #s9 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout)
 
-            epoch_results.append([s1,s2,s3,s4,s5,s6,s7,s8,s9,s10,s11])
+            epoch_results.append([s1,s2])#,s3,s4,s5,s6,s7,s8,s9])
         total_results.append(epoch_results)
 
     legend_labels = [strategy.name for strategy in total_results[0][0]]
@@ -131,7 +131,7 @@ def automated_test():
     fig, ax = plt.subplots()
     for line in deviations:
         ax.plot(node_labels, line)
-    ax.set(xlabel='Node Count', ylabel='Deviation', title='Average Deviation from OneSplit per Node Count')
+    ax.set(xlabel='Node Count', ylabel='Deviation', title='Average Space Deviation from OneSplit')
     ax.legend(legend_labels)
     plt.xticks(node_labels)
     plt.show()

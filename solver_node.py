@@ -117,7 +117,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_4(problem)
 
 
-    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec)])
+    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 1), ("MIPGap", 0.001)])
     solver.actualSolve(problem)
 
     print('\n\nSOLVING:', name)
