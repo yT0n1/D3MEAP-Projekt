@@ -22,10 +22,10 @@ def automated_test():
     total_results = []
 
     # Configuration
-    min_nodes = 4
-    max_nodes = 12
-    timeout = 3
-    num_epochs = 3
+    min_nodes = 2
+    max_nodes = 30
+    timeout = 15
+    num_epochs = 4
 
     problems = []
     for epoch in range(num_epochs):
@@ -86,7 +86,6 @@ def automated_test():
         space_plot_data.append([space_per_strategy[i][j] for i in range(len(space_per_strategy))])
         deviation_plot_data.append([deviation_per_strategy[i][j] for i in range(len(deviation_per_strategy))])
         time_plot_data.append([time_per_strategy[i][j] for i in range(len(time_per_strategy))])
-
     node_labels = [i for i in range(min_nodes, max_nodes+1)]
 
     # Plot Space Graph
@@ -124,6 +123,18 @@ def automated_test():
         print(deviation_plot_data[i])
         print("")
 
+    # Deviation from One Split
+    one_split_space = space_plot_data[legend_labels.index("One Split")]
+    deviations = []
+    for strategy_results in space_plot_data:
+       deviations.append([strategy_results[node_level] - one_split_space[node_level] for node_level in range(len(strategy_results))])
+    fig, ax = plt.subplots()
+    for line in deviations:
+        ax.plot(node_labels, line)
+    ax.set(xlabel='Node Count', ylabel='Deviation', title='Average Deviation from OneSplit per Node Count')
+    ax.legend(legend_labels)
+    plt.xticks(node_labels)
+    plt.show()
 
 
 if __name__ == '__main__':
