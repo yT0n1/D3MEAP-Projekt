@@ -117,7 +117,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_4(problem)
 
 
-    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 1), ("MIPGap", 0.001)])
+    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 1)])
     solver.actualSolve(problem)
 
     print('\n\nSOLVING:', name)
@@ -163,7 +163,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
 
 class SolverNode(Node):
-    def __init__(self, name, should_squeeze=True, use_normed=False, **kwargs):
+    def __init__(self, name, should_squeeze=False, use_normed=False, **kwargs):
         super().__init__(name, **kwargs)
         self.problem = None
         self.split_ratio = None
@@ -171,9 +171,10 @@ class SolverNode(Node):
         self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
-        self.epsilon_factor = 10000000
+        self.epsilon_factor = 0
 
-    def solve(self, timeout_secs=60):
+    def solve(self, timeout_secs=60, epsilon_factor=500000):
+        self.epsilon_factor = epsilon_factor
         if self.is_leaf:
             mask = [0] * len(self.problem.param_fragment_size)
             for q in self.problem.param_query_ids:
@@ -192,7 +193,7 @@ class SolverNode(Node):
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
-            self.name, self.split_ratio, timeout_secs, self.root.epsilon_factor,
+            self.name, self.split_ratio, timeout_secs, epsilon_factor,
             self.root.should_squeeze,
             self.root.use_normed)
 

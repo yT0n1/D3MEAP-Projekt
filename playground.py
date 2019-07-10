@@ -67,15 +67,15 @@ def main():
            i in range(len(param_query_frequency))])
 
 
-def solve_for_tree(tree_root, problem, timeout=None):
+def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
     start = time.time()
     print('\nSolving Tree', tree_root.name)
     #print(RenderTree(tree_root, style=DoubleStyle))
     tree_root.problem = problem
     if timeout:
-        total_space = [node.solve(timeout) for node in LevelOrderIter(tree_root)]
+        total_space = [node.solve(timeout, epsilon_factor) for node in LevelOrderIter(tree_root)]
     else:
-        total_space = [node.solve() for node in LevelOrderIter(tree_root)]
+        total_space = [node.solve(epsilon_factor=epsilon_factor) for node in LevelOrderIter(tree_root)]
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
     total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])
