@@ -23,102 +23,15 @@ def generate_queries(num_queries, num_fragments):
 
 def automated_test():
     # Configuration
-    min_nodes = 4
-    max_nodes = 6
+    min_nodes = 3
+    max_nodes = 5
     timeout = 15
     num_problems = 5
 
     problems = generate_problems(num_problems)
 
     total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout)
-    y_axises = ['time', 'space', 'deviation']
-    for y_axis in y_axises:
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
-        plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
-        for name, group in plot_group:
-            group.plot(x='nodes', y=y_axis, label=name, ax=ax)
-        plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
-        plt.show()
-    # exit()
-    legend_labels = [strategy.name for strategy in total_results[0][0]]
-    space_per_strategy = []
-    space_per_strategy_avg = []
-    deviation_per_strategy = []
-    time_per_strategy = []
-
-    # Get the results which you want
-    for node_level in total_results:
-        space_per_strategy.append(
-            [mean([node_level[i][j].space for i in range(len(node_level))]) for j in
-             range(len(node_level[0]))])
-        deviation_per_strategy.append(
-            [mean([node_level[i][j].deviation for i in range(len(node_level))]) for j in
-             range(len(node_level[0]))])
-        time_per_strategy.append(
-            [mean([node_level[i][j].time for i in range(len(node_level))]) for j in
-             range(len(node_level[0]))])
-
-    # Reformat Lists
-    space_plot_data = []
-    deviation_plot_data = []
-    time_plot_data = []
-    for j in range(len(legend_labels)):
-        space_plot_data.append([space_per_strategy[i][j] for i in range(len(space_per_strategy))])
-        deviation_plot_data.append(
-            [deviation_per_strategy[i][j] for i in range(len(deviation_per_strategy))])
-        time_plot_data.append([time_per_strategy[i][j] for i in range(len(time_per_strategy))])
-    node_labels = [i for i in range(min_nodes, max_nodes + 1)]
-
-    # Plot Space Graph
-    fig, ax = plt.subplots()
-    for line in space_plot_data:
-        ax.plot(node_labels, line, alpha=0.5)
-    ax.set(xlabel='Node Count', ylabel='Space', title='Average Space per Node Count')
-    ax.legend(legend_labels)
-    plt.xticks(node_labels)
-    plt.show()
-
-    # Plot Deviation Graph
-    fig, ax = plt.subplots()
-    for line in deviation_plot_data:
-        ax.plot(node_labels, line, alpha=0.5)
-    ax.set(xlabel='Node Count', ylabel='Deviation', title='Average Deviation per Node Count')
-    ax.legend(legend_labels)
-    plt.xticks(node_labels)
-    plt.show()
-
-    # Plot Deviation Graph
-    fig, ax = plt.subplots()
-    for line in time_plot_data:
-        ax.plot(node_labels, line, alpha=0.5)
-    ax.set(xlabel='Node Count', ylabel='Runtime in Seconds', title='Average Runtime per Node Count')
-    ax.legend(legend_labels)
-    plt.xticks(node_labels)
-    plt.show()
-
-    # Print Space & Deviation
-    for i, label in enumerate(legend_labels):
-        print("Space for Tree: ", label)
-        print(space_plot_data[i])
-        print("Deviation for Tree: ", label)
-        print(deviation_plot_data[i])
-        print("")
-
-    # Deviation from One Split
-    one_split_space = space_plot_data[legend_labels.index("One Split")]
-    deviations = []
-    for strategy_results in space_plot_data:
-        deviations.append(
-            [strategy_results[node_level] - one_split_space[node_level] for node_level in
-             range(len(strategy_results))])
-    fig, ax = plt.subplots()
-    for line in deviations:
-        ax.plot(node_labels, line, alpha=0.5)
-    ax.set(xlabel='Node Count', ylabel='Deviation', title='Average Space Deviation from OneSplit')
-    ax.legend(legend_labels)
-    plt.xticks(node_labels)
-    plt.show()
+    plot_data(df, min_nodes, max_nodes)
 
 
 def test_with_nodes(min_nodes, max_nodes, problems, timeout):
@@ -152,6 +65,8 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout):
             # dot_export_actual_workload(xx_r.tree)
             epoch_results.append(xx_results)
         total_results.append(epoch_results)
+    # unfortunately we have to enforce the column types manually or some will be object which
+    # will break aggregation.
     df.nodes = df.nodes.astype('int')
     df.algo = df.algo.astype('str')
     df.time = df.time.astype('float')
@@ -178,6 +93,21 @@ def generate_problems(num_epochs):
                                 len(param_query_ids)))
     return problems
 
+def plot_data(df, min_nodes, max_nodes):
+    y_axises = ['time', 'space', 'deviation']
+    for y_axis in y_axises:
+        fig, ax = plt.subplots()
+        ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
+        plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
+        for name, group in plot_group:
+            group.plot(x='nodes', y=y_axis, label=name, ax=ax)
+        plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
+        plt.show()
+
+    divergence = (df.groupby('algo').mean() / df.groupby('algo').mean().loc['One Split']) - 1
+    divergence = divergence.drop(columns=['nodes'])
+    divergence.plot.bar()
+    plt.show()
 
 if __name__ == '__main__':
     automated_test()
