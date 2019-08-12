@@ -69,7 +69,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
         for n in range(param_num_nodes):
             for w in range(len(param_query_workload)):
                 c = (sum([var_workshare[(q, n)] * param_query_workload[w][q] for q in
-                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n])  <= var_epsilon
+                          param_query_ids]) / param_total_workload[w]) * (1 - workshare_split[n]) <= var_epsilon
                 problem_instance += c
         return problem_instance
 
@@ -119,6 +119,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 1)])
     solver.actualSolve(problem)
+    #problem.solve(PULP_CBC_CMD(maxSeconds=timeout_sec, threads=4))
 
     print('\n\nSOLVING:', name)
     print("")
@@ -168,7 +169,7 @@ class SolverNode(Node):
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
-        self.should_squeeze = should_squeeze
+        self.should_squeeze = False
         self.use_normed = use_normed
         self.workshare_deviation = 0
         self.epsilon_factor = 0

@@ -40,7 +40,7 @@ def prime_factor_tree(nr_leaf_nodes, reverse=False, combine=False):
     name = ''
     name += ' combined' if combine else ''
     name += ' reversed' if reverse else ''
-    parent = SolverNode("Prime " + str(split_list) + name)
+    parent = SolverNode("Prime " + name + '|' + str(split_list))
     append(parent, split_list)
     add_split_ratios(parent)
     number_tree_nodes(parent)
@@ -134,6 +134,23 @@ def dot_export_actual_workload(root: SolverNode, name_appendix=''):
     DotExporter(root, nodeattrfunc=design_node,
                 edgeattrfunc=label_split).to_picture(root.name + name_appendix + ".png")
 
+def dot_export_ideal_workload(root: SolverNode, name_appendix=''):
+    def label_split(node, child):
+        should = str(round(node.split_ratio[node.children.index(child)], 2))
+        return 'label="' + should + '"'
+
+    DotExporter(root, nodeattrfunc=design_node,
+                edgeattrfunc=label_split, options=['dpi=300']).to_picture(root.name +
+                                                                           name_appendix + ".png")
 
 def print_tree(root):
     print(RenderTree(root, style=DoubleStyle))
+
+
+if __name__ == '__main__':
+    trees_8 = [approximate_tree(6,2),approximate_tree(6,3), approximate_tree(6,4),
+               approximate_tree(6,5),
+               prime_factor_tree(6,True), prime_factor_tree(6,False), one_vs_all_split(6),
+               one_split_tree(6)]
+    for tree in trees_8:
+        dot_export_ideal_workload(tree)

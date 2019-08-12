@@ -1,3 +1,4 @@
+import copy
 import random
 import time
 from anytree import RenderTree, DoubleStyle, LevelOrderIter
@@ -19,7 +20,7 @@ class Problem:
 
 
 def main():
-    param_num_nodes = 4
+    param_num_nodes = 6
 
     param_fragment_size = [1, 2, 3, 4, 4, 1, 2]
     param_queries = [[1, 1, 0, 1, 1, 1, 0],
@@ -50,16 +51,17 @@ def main():
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
     #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
-    #s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
+    s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
     #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
-    #s7 = solve_for_tree(approximate_tree(param_num_nodes, 2), problem)
-    s8 = solve_for_tree(binary_tree(param_num_nodes), problem)
-    dot_export_actual_workload(s8.tree)
+    s7 = solve_for_tree(approximate_tree(param_num_nodes, 2), problem)
+    #s8 = solve_for_tree(binary_tree(param_num_nodes), problem)
+    dot_export_actual_workload(s5.tree)
+    dot_export_actual_workload(s7.tree)
 
     #print(s1)#, s2, s3,s4, s5)
     #print(s4)
     #automated_test(2)
-    print(s8)
+    print(s5, 27)
 
     print('Minimum possible would be:', sum(param_fragment_size))
     print('Workload per query: ',
@@ -68,6 +70,7 @@ def main():
 
 
 def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
+    problem = copy.deepcopy(problem)
     start = time.time()
     print('\nSolving Tree', tree_root.name)
     #print(RenderTree(tree_root, style=DoubleStyle))
@@ -83,7 +86,8 @@ def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
     end = time.time()
     runtime = end - start
     aborted = runtime >= timeout if timeout else False
-    return Observation(sum(total_space), end - start, tree_root, aborted, total_deviation, tree_root.name)
+    return Observation(sum(total_space), end - start, tree_root, aborted,
+                       total_deviation, tree_root.name)
 
 if __name__ == '__main__':
     main()
