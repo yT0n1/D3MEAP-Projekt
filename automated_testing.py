@@ -89,7 +89,7 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
 def epsilon_pareto_front(selected_node_count, problems, timeout):
     total_results = []
     df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
-    epsilon_factor_array = [10, 1000, 10000, 100000]
+    epsilon_factor_array = [10, 100, 1000, 3000, 5000, 7500, 10000, 500000, 1000000]
 
     for epsilon_factor in epsilon_factor_array:
         epoch_results = []
@@ -174,7 +174,11 @@ def plot_data_pareto(df):
     for algo in plot_group['algo'].unique():
         fig, ax = plt.subplots()
         ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for { algo }')
-        plot_group[plot_group.algo==algo].plot.scatter(x='space', y='deviation', label=algo, ax=ax, colormap='inferno', c=plot_group[plot_group.algo==algo]['epsilon'].apply(math.log))
+        plot_group[plot_group.algo==algo].plot.scatter(x='space',
+                                                       y='deviation',
+                                                       ax=ax,
+                                                       colormap='cool',
+                                                       c=plot_group[plot_group.algo==algo]['epsilon'].apply(lambda x: math.log(x, 10)))
         plt.show()
 
     # y_axises = ['time', 'space', 'deviation']
