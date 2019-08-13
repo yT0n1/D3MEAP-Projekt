@@ -190,34 +190,29 @@ def plot_data(df, min_nodes, max_nodes):
 
 
 def plot_data_pareto(df):
-    # for algorithm in df['algo'].distinct
-
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
     for algo in plot_group['algo'].unique():
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
+        fig, axs = plt.subplots(1, 3)
+        axs[0].set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
         color = plot_group[plot_group.algo == algo]['epsilon'].apply(lambda x: math.log(x, 10))
         plot_group[plot_group.algo == algo].plot.scatter(x='space',
                                                          y='deviation',
-                                                         ax=ax,
+                                                         ax=axs[0],
                                                          colormap='cool',
                                                          c=color)
-        plt.show()
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Space', ylabel='Deviation', title=f'Time / Deviation for {algo}')
+        axs[1].set(xlabel='Space', ylabel='Deviation', title=f'Time / Deviation for {algo}')
         plot_group[plot_group.algo == algo].plot.scatter(x='time',
                                                          y='deviation',
-                                                         ax=ax,
+                                                         ax=axs[1],
                                                          colormap='cool',
                                                          c=color)
-        plt.show()
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Time for {algo}')
+        axs[2].set(xlabel='Space', ylabel='Deviation', title=f'Space / Time for {algo}')
         plot_group[plot_group.algo == algo].plot.scatter(x='space',
                                                          y='time',
-                                                         ax=ax,
+                                                         ax=axs[2],
                                                          colormap='cool',
                                                          c=color)
+        plt.tight_layout()
         plt.show()
 
 
