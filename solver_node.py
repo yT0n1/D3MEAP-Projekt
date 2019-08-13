@@ -221,7 +221,7 @@ class SolverNode(Node):
         self.split_ratio = [len(c.leaves) / reachable_leaves for c in self.children]
 
 
-def solve_for_tree(tree_root, problem, timeout=60, should_squeeze=False, epsilon_factor=10000):
+def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor):
     problem = copy.deepcopy(problem)
     start = time.time()
     print('\nSolving Tree', tree_root.name)

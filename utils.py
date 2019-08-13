@@ -1,5 +1,4 @@
 import random
-from statistics import mean
 
 
 def generate_queries(param_num_queries, param_num_fragments):

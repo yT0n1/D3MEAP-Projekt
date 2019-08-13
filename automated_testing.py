@@ -24,17 +24,20 @@ def generate_queries(num_queries, num_fragments):
 def automated_test():
     # Configuration
     min_nodes = 3
-    max_nodes = 8
+    max_nodes = 12
     timeout = 15
-    num_problems = 5
+    num_problems = 3
+    should_squeeze = False
+    epsilon_factor = 10000
 
     problems = generate_problems(num_problems)
 
-    total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout)
+    total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
     plot_data(df, min_nodes, max_nodes)
+    df.to_csv("out.csv")
 
 
-def test_with_nodes(min_nodes, max_nodes, problems, timeout):
+def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor):
     total_results = []
     df = pd.DataFrame(columns=['nodes', 'algo', 'time', 'space', 'deviation'])
 
@@ -42,19 +45,19 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout):
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
-            s11 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze, epsilon_factor)
 
-            s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout)
-            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout)
+            s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout, should_squeeze, epsilon_factor)
+            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout, should_squeeze, epsilon_factor)
 
-            s4 = solve_for_tree(one_vs_all_split(node_count), problem, timeout)
+            s4 = solve_for_tree(one_vs_all_split(node_count), problem, timeout, should_squeeze, epsilon_factor)
 
-            s5 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout)
-            s6 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout)
-            s7 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout)
-            s8 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout)
-            s9 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout)
-            s10 = solve_for_tree(approximate_tree(node_count, 7), problem, timeout)
+            s5 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout, should_squeeze, epsilon_factor)
+            s6 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout, should_squeeze, epsilon_factor)
+            s7 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout, should_squeeze, epsilon_factor)
+            s8 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout, should_squeeze, epsilon_factor)
+            s9 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout, should_squeeze, epsilon_factor)
+            s10 = solve_for_tree(approximate_tree(node_count, 7), problem, timeout, should_squeeze, epsilon_factor)
 
             xx_results = [s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
             for res in xx_results:
@@ -78,8 +81,8 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout):
 def generate_problems(num_epochs):
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(10, 20), 1)[0]
-        param_num_queries = random.sample(range(6, 10), 1)[0]
+        param_num_fragments = random.sample(range(20, 30), 1)[0]
+        param_num_queries = random.sample(range(10, 15), 1)[0]
 
         param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
         param_queries = generate_queries(param_num_queries, param_num_fragments)
