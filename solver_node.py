@@ -1,8 +1,12 @@
 import copy
+import time
+
 from pulp import *
 import pulp.solvers
 
-from anytree import Node
+from anytree import Node, LevelOrderIter
+
+from observation import Observation
 from utils import print_location, print_location_adaptive, print_workload, derivation_from_worksplit
 
 
@@ -216,3 +220,23 @@ class SolverNode(Node):
     def set_split_ratio(self):
         reachable_leaves = len(self.leaves)
         self.split_ratio = [len(c.leaves) / reachable_leaves for c in self.children]
+
+
+def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
+    problem = copy.deepcopy(problem)
+    start = time.time()
+    print('\nSolving Tree', tree_root.name)
+    tree_root.problem = problem
+    if timeout:
+        total_space = [node.solve(timeout, epsilon_factor) for node in LevelOrderIter(tree_root)]
+    else:
+        total_space = [node.solve(epsilon_factor=epsilon_factor) for node in LevelOrderIter(tree_root)]
+    print('Split Space required', total_space)
+    print('In total ', sum(total_space))
+    total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])
+    print('Total Deviation ',total_deviation)
+    end = time.time()
+    runtime = end - start
+    aborted = runtime >= timeout if timeout else False
+    return Observation(sum(total_space), end - start, tree_root, aborted,
+                       total_deviation, tree_root.name)

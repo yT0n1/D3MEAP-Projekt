@@ -4,7 +4,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from playground import solve_for_tree, Problem
+from playground import Problem
+from solver_node import solve_for_tree
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
 
 mpl.rcParams['figure.dpi'] = 400
@@ -23,7 +24,7 @@ def generate_queries(num_queries, num_fragments):
 def automated_test():
     # Configuration
     min_nodes = 3
-    max_nodes = 5
+    max_nodes = 8
     timeout = 15
     num_problems = 5
 

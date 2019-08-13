@@ -1,11 +1,5 @@
-import copy
-import random
-import time
-from anytree import RenderTree, DoubleStyle, LevelOrderIter
-
-from observation import Observation
-from tree_generation import prime_factor_tree, binary_tree, one_split_tree, one_vs_all_split, \
-    approximate_tree, dot_export_actual_workload
+from solver_node import solve_for_tree
+from tree_generation import one_split_tree, approximate_tree, dot_export_actual_workload
 
 
 class Problem:
@@ -51,7 +45,7 @@ def main():
     #s2 = solve_for_tree(prime_factor_tree(param_num_nodes, True), problem)
     #s3 = solve_for_tree(prime_factor_tree(param_num_nodes, False, True), problem)
     #s4 = solve_for_tree(prime_factor_tree(param_num_nodes, True, True), problem)
-    s5 = solve_for_tree(one_split_tree(param_num_nodes),problem, 2)
+    s5 = solve_for_tree(one_split_tree(param_num_nodes), problem, 2)
     #s6 = solve_for_tree(one_vs_all_split(param_num_nodes), problem, 2)
     s7 = solve_for_tree(approximate_tree(param_num_nodes, 2), problem)
     #s8 = solve_for_tree(binary_tree(param_num_nodes), problem)
@@ -68,26 +62,6 @@ def main():
           [[a * b for a, b in zip(param_query_frequency[i], param_query_cost)] for
            i in range(len(param_query_frequency))])
 
-
-def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
-    problem = copy.deepcopy(problem)
-    start = time.time()
-    print('\nSolving Tree', tree_root.name)
-    #print(RenderTree(tree_root, style=DoubleStyle))
-    tree_root.problem = problem
-    if timeout:
-        total_space = [node.solve(timeout, epsilon_factor) for node in LevelOrderIter(tree_root)]
-    else:
-        total_space = [node.solve(epsilon_factor=epsilon_factor) for node in LevelOrderIter(tree_root)]
-    print('Split Space required', total_space)
-    print('In total ', sum(total_space))
-    total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])
-    print('Total Deviation ',total_deviation)
-    end = time.time()
-    runtime = end - start
-    aborted = runtime >= timeout if timeout else False
-    return Observation(sum(total_space), end - start, tree_root, aborted,
-                       total_deviation, tree_root.name)
 
 if __name__ == '__main__':
     main()
