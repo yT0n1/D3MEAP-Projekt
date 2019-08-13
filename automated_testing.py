@@ -38,7 +38,7 @@ def automated_test():
 
     # total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
 
-    selected_node_count = 6
+    selected_node_count = 12
     pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
     plot_data_pareto(df)
 
@@ -192,7 +192,7 @@ def plot_data(df, min_nodes, max_nodes):
 def plot_data_pareto(df):
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
     for algo in plot_group['algo'].unique():
-        fig, axs = plt.subplots(1, 3)
+        fig, axs = plt.subplots(1, 3, figsize=(10,3))
         axs[0].set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
         color = plot_group[plot_group.algo == algo]['epsilon'].apply(lambda x: math.log(x, 10))
         plot_group[plot_group.algo == algo].plot.scatter(x='space',
