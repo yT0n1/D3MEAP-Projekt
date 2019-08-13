@@ -168,17 +168,16 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
 
 class SolverNode(Node):
-    def __init__(self, name, should_squeeze=False, use_normed=False, **kwargs):
+    def __init__(self, name, use_normed=False, **kwargs):
         super().__init__(name, **kwargs)
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
-        self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
         self.epsilon_factor = 0
 
-    def solve(self, timeout_secs=60, epsilon_factor=10000):
+    def solve(self, timeout_secs, epsilon_factor, should_squeeze):
         self.epsilon_factor = epsilon_factor
         if self.is_leaf:
             mask = [0] * len(self.problem.param_fragment_size)
@@ -199,7 +198,7 @@ class SolverNode(Node):
             self.problem.param_query_frequency,
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
             self.name, self.split_ratio, timeout_secs, epsilon_factor,
-            self.root.should_squeeze,
+            should_squeeze,
             self.root.use_normed)
 
         self.workshare_split = workload_percentages
@@ -222,15 +221,13 @@ class SolverNode(Node):
         self.split_ratio = [len(c.leaves) / reachable_leaves for c in self.children]
 
 
-def solve_for_tree(tree_root, problem, timeout=None, epsilon_factor=10000):
+def solve_for_tree(tree_root, problem, timeout=60, should_squeeze=False, epsilon_factor=10000):
     problem = copy.deepcopy(problem)
     start = time.time()
     print('\nSolving Tree', tree_root.name)
     tree_root.problem = problem
-    if timeout:
-        total_space = [node.solve(timeout, epsilon_factor) for node in LevelOrderIter(tree_root)]
-    else:
-        total_space = [node.solve(epsilon_factor=epsilon_factor) for node in LevelOrderIter(tree_root)]
+    total_space = [node.solve(timeout, epsilon_factor, should_squeeze) for node in LevelOrderIter(tree_root)]
+
     print('Split Space required', total_space)
     print('In total ', sum(total_space))
     total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])

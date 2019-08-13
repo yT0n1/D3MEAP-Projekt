@@ -2,11 +2,10 @@ import functools
 import operator
 from statistics import mean
 
-import anytree
-from anytree import LevelOrderIter, RenderTree, DoubleStyle
-from sympy.ntheory import factorint
 import math
+from anytree import LevelOrderIter, RenderTree, DoubleStyle
 from anytree.exporter import DotExporter
+from sympy.ntheory import factorint
 
 from solver_node import SolverNode
 
@@ -59,16 +58,16 @@ def binary_tree(nr_leaf_nodes):
     return parent
 
 
-def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
-    parent = SolverNode("Complete", should_squeeze, use_normed)
+def one_split_tree(nr_leaf_nodes, use_normed=False):
+    parent = SolverNode("Complete", use_normed)
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
     number_tree_nodes(parent)
     return parent
 
 
-def one_vs_all_split(nr_leaf_nodes, squeeze=True):
-    parent = SolverNode("One Vs All Split", squeeze)
+def one_vs_all_split(nr_leaf_nodes):
+    parent = SolverNode("One Vs All Split")
     parent.split_ratio = [1 / nr_leaf_nodes, 1 - (1 / nr_leaf_nodes)]
     previous_level_node = parent
     for i in range(1, nr_leaf_nodes):
