@@ -1,12 +1,11 @@
 import random
-from statistics import median, mean
+
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from playground import solve_for_tree, Problem
-from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree, \
-    dot_export_actual_workload
-import matplotlib as mpl
+from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
 
 mpl.rcParams['figure.dpi'] = 400
 

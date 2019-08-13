@@ -169,12 +169,12 @@ class SolverNode(Node):
         self.problem = None
         self.split_ratio = None
         self.workshare_split = None
-        self.should_squeeze = False
+        self.should_squeeze = should_squeeze
         self.use_normed = use_normed
         self.workshare_deviation = 0
         self.epsilon_factor = 0
 
-    def solve(self, timeout_secs=60, epsilon_factor=500000):
+    def solve(self, timeout_secs=60, epsilon_factor=10000):
         self.epsilon_factor = epsilon_factor
         if self.is_leaf:
             mask = [0] * len(self.problem.param_fragment_size)
