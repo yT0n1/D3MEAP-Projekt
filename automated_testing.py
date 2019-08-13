@@ -1,5 +1,6 @@
 import random
 
+import math
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -88,7 +89,7 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
 def epsilon_pareto_front(selected_node_count, problems, timeout):
     total_results = []
     df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
-    epsilon_factor_array = [10, 10000]
+    epsilon_factor_array = [10, 1000, 10000, 100000]
 
     for epsilon_factor in epsilon_factor_array:
         epoch_results = []
@@ -130,8 +131,8 @@ def epsilon_pareto_front(selected_node_count, problems, timeout):
 def generate_problems(num_epochs):
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(20, 30), 1)[0]
-        param_num_queries = random.sample(range(10, 15), 1)[0]
+        param_num_fragments = random.sample(range(10, 20), 1)[0]
+        param_num_queries = random.sample(range(5, 10), 1)[0]
 
         param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
         param_queries = generate_queries(param_num_queries, param_num_fragments)
@@ -166,11 +167,15 @@ def plot_data(df, min_nodes, max_nodes):
     plt.show()
 
 def plot_data_pareto(df):
-    fig, ax = plt.subplots()
-    ax.set(xlabel='Space', ylabel='Time', title=f'todo')
+    #for algorithm in df['algo'].distinct
+
+
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
-    plot_group.plot.scatter(x='space', y='time', label="ABC", ax=ax, c='algo', colormap='inferno')
-    plt.show()
+    for algo in plot_group['algo'].unique():
+        fig, ax = plt.subplots()
+        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for { algo }')
+        plot_group[plot_group.algo==algo].plot.scatter(x='space', y='deviation', label=algo, ax=ax, colormap='inferno', c=plot_group[plot_group.algo==algo]['epsilon'].apply(math.log))
+        plt.show()
 
     # y_axises = ['time', 'space', 'deviation']
     # for y_axis in y_axises:
