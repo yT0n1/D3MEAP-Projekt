@@ -36,13 +36,13 @@ def automated_test():
 
     problems = generate_problems(num_problems)
 
-    #total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
+    # total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
 
     selected_node_count = 6
     pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
     plot_data_pareto(df)
 
-    #plot_data(df, min_nodes, max_nodes)
+    # plot_data(df, min_nodes, max_nodes)
     df.to_csv("out.csv")
 
 
@@ -54,19 +54,29 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
-            s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze, epsilon_factor)
+            s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze,
+                                 epsilon_factor)
 
-            s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout, should_squeeze, epsilon_factor)
-            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout, should_squeeze, epsilon_factor)
+            s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout,
+                                should_squeeze, epsilon_factor)
+            s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout,
+                                should_squeeze, epsilon_factor)
 
-            s4 = solve_for_tree(one_vs_all_split(node_count), problem, timeout, should_squeeze, epsilon_factor)
+            s4 = solve_for_tree(one_vs_all_split(node_count), problem, timeout, should_squeeze,
+                                epsilon_factor)
 
-            s5 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout, should_squeeze, epsilon_factor)
-            s6 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout, should_squeeze, epsilon_factor)
-            s7 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout, should_squeeze, epsilon_factor)
-            s8 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout, should_squeeze, epsilon_factor)
-            s9 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout, should_squeeze, epsilon_factor)
-            s10 = solve_for_tree(approximate_tree(node_count, 7), problem, timeout, should_squeeze, epsilon_factor)
+            s5 = solve_for_tree(approximate_tree(node_count, 2), problem, timeout, should_squeeze,
+                                epsilon_factor)
+            s6 = solve_for_tree(approximate_tree(node_count, 3), problem, timeout, should_squeeze,
+                                epsilon_factor)
+            s7 = solve_for_tree(approximate_tree(node_count, 4), problem, timeout, should_squeeze,
+                                epsilon_factor)
+            s8 = solve_for_tree(approximate_tree(node_count, 5), problem, timeout, should_squeeze,
+                                epsilon_factor)
+            s9 = solve_for_tree(approximate_tree(node_count, 6), problem, timeout, should_squeeze,
+                                epsilon_factor)
+            s10 = solve_for_tree(approximate_tree(node_count, 7), problem, timeout, should_squeeze,
+                                 epsilon_factor)
 
             xx_results = [s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
             for res in xx_results:
@@ -86,6 +96,7 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
     df.deviation = df.deviation.astype('float')
     return total_results, df
 
+
 def epsilon_pareto_front(selected_node_count, problems, timeout):
     total_results = []
     df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
@@ -95,24 +106,35 @@ def epsilon_pareto_front(selected_node_count, problems, timeout):
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
-            s11 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True, epsilon_factor)
+            s11 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True,
+                                 epsilon_factor)
 
-            s2 = solve_for_tree(prime_factor_tree(selected_node_count, False, False), problem, timeout, True, epsilon_factor)
-            s3 = solve_for_tree(prime_factor_tree(selected_node_count, True, False), problem, timeout, True, epsilon_factor)
+            s2 = solve_for_tree(prime_factor_tree(selected_node_count, False, False), problem,
+                                timeout, True, epsilon_factor)
+            s3 = solve_for_tree(prime_factor_tree(selected_node_count, True, False), problem,
+                                timeout, True, epsilon_factor)
 
-            s4 = solve_for_tree(one_vs_all_split(selected_node_count), problem, timeout, True, epsilon_factor)
+            s4 = solve_for_tree(one_vs_all_split(selected_node_count), problem, timeout, True,
+                                epsilon_factor)
 
-            s5 = solve_for_tree(approximate_tree(selected_node_count, 2), problem, timeout, True, epsilon_factor)
-            s6 = solve_for_tree(approximate_tree(selected_node_count, 3), problem, timeout, True, epsilon_factor)
-            s7 = solve_for_tree(approximate_tree(selected_node_count, 4), problem, timeout, True, epsilon_factor)
-            s8 = solve_for_tree(approximate_tree(selected_node_count, 5), problem, timeout, True, epsilon_factor)
-            s9 = solve_for_tree(approximate_tree(selected_node_count, 6), problem, timeout, True, epsilon_factor)
-            s10 = solve_for_tree(approximate_tree(selected_node_count, 7), problem, timeout, True, epsilon_factor)
+            s5 = solve_for_tree(approximate_tree(selected_node_count, 2), problem, timeout, True,
+                                epsilon_factor)
+            s6 = solve_for_tree(approximate_tree(selected_node_count, 3), problem, timeout, True,
+                                epsilon_factor)
+            s7 = solve_for_tree(approximate_tree(selected_node_count, 4), problem, timeout, True,
+                                epsilon_factor)
+            s8 = solve_for_tree(approximate_tree(selected_node_count, 5), problem, timeout, True,
+                                epsilon_factor)
+            s9 = solve_for_tree(approximate_tree(selected_node_count, 6), problem, timeout, True,
+                                epsilon_factor)
+            s10 = solve_for_tree(approximate_tree(selected_node_count, 7), problem, timeout, True,
+                                 epsilon_factor)
 
             xx_results = [s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
             for res in xx_results:
                 # The name is split due to the very verbose and varying naming for prime trees
-                df.loc[len(df)] = [epsilon_factor, res.name.split('|')[0], res.time, res.space, res.deviation]
+                df.loc[len(df)] = [epsilon_factor, res.name.split('|')[0], res.time, res.space,
+                                   res.deviation]
 
             # for xx_r in xx_results:
             # dot_export_actual_workload(xx_r.tree)
@@ -158,46 +180,26 @@ def plot_data(df, min_nodes, max_nodes):
         plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
         plt.show()
 
-    deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1)*100
+    deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
     deviation = deviation.drop(columns=['nodes'])
     fig, ax = plt.subplots()
+    deviation.plot.bar(ax=ax)
     ax.set(xlabel='Split Strategies', ylabel='%',
            title='%-Deviation from optimum One Split Strategy')
-    deviation.plot.bar(ax=ax)
     plt.show()
 
-def plot_data_pareto(df):
-    #for algorithm in df['algo'].distinct
 
+def plot_data_pareto(df):
+    # for algorithm in df['algo'].distinct
 
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
     for algo in plot_group['algo'].unique():
         fig, ax = plt.subplots()
-        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for { algo }')
-        plot_group[plot_group.algo==algo].plot.scatter(x='space',
-                                                       y='deviation',
-                                                       ax=ax,
-                                                       colormap='cool',
-                                                       c=plot_group[plot_group.algo==algo]['epsilon'].apply(lambda x: math.log(x, 10)))
+        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
+        color = plot_group[plot_group.algo == algo]['epsilon'].apply(lambda x: math.log(x, 10))
+        plot_group[plot_group.algo == algo].plot.scatter(x='space', y='deviation',
+                                                         ax=ax, colormap='cool', c=color)
         plt.show()
-
-    # y_axises = ['time', 'space', 'deviation']
-    # for y_axis in y_axises:
-    #     fig, ax = plt.subplots()
-    #     ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
-    #     plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
-    #     for name, group in plot_group:
-    #         group.plot(x='nodes', y=y_axis, label=name, ax=ax)
-    #     plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
-    #     plt.show()
-    #
-    # deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1)*100
-    # deviation = deviation.drop(columns=['nodes'])
-    # fig, ax = plt.subplots()
-    # ax.set(xlabel='Split Strategies', ylabel='%',
-    #        title='%-Deviation from optimum One Split Strategy')
-    # deviation.plot.bar(ax=ax)
-    # plt.show()
 
 
 if __name__ == '__main__':
