@@ -197,8 +197,27 @@ def plot_data_pareto(df):
         fig, ax = plt.subplots()
         ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
         color = plot_group[plot_group.algo == algo]['epsilon'].apply(lambda x: math.log(x, 10))
-        plot_group[plot_group.algo == algo].plot.scatter(x='space', y='deviation',
-                                                         ax=ax, colormap='cool', c=color)
+        plot_group[plot_group.algo == algo].plot.scatter(x='space',
+                                                         y='deviation',
+                                                         ax=ax,
+                                                         colormap='cool',
+                                                         c=color)
+        plt.show()
+        fig, ax = plt.subplots()
+        ax.set(xlabel='Space', ylabel='Deviation', title=f'Time / Deviation for {algo}')
+        plot_group[plot_group.algo == algo].plot.scatter(x='time',
+                                                         y='deviation',
+                                                         ax=ax,
+                                                         colormap='cool',
+                                                         c=color)
+        plt.show()
+        fig, ax = plt.subplots()
+        ax.set(xlabel='Space', ylabel='Deviation', title=f'Space / Time for {algo}')
+        plot_group[plot_group.algo == algo].plot.scatter(x='space',
+                                                         y='time',
+                                                         ax=ax,
+                                                         colormap='cool',
+                                                         c=color)
         plt.show()
 
 
