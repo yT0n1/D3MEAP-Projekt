@@ -8,6 +8,9 @@ from playground import Problem
 from solver_node import solve_for_tree
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
 
+import numpy as np
+import matplotlib.cm as cm
+
 mpl.rcParams['figure.dpi'] = 400
 
 
@@ -24,16 +27,21 @@ def generate_queries(num_queries, num_fragments):
 def automated_test():
     # Configuration
     min_nodes = 3
-    max_nodes = 12
+    max_nodes = 6
     timeout = 15
     num_problems = 3
-    should_squeeze = False
+    should_squeeze = True
     epsilon_factor = 10000
 
     problems = generate_problems(num_problems)
 
-    total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
-    plot_data(df, min_nodes, max_nodes)
+    #total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
+
+    selected_node_count = 6
+    pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
+    plot_data_pareto(df)
+
+    #plot_data(df, min_nodes, max_nodes)
     df.to_csv("out.csv")
 
 
@@ -71,6 +79,47 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
     # unfortunately we have to enforce the column types manually or some will be object which
     # will break aggregation.
     df.nodes = df.nodes.astype('int')
+    df.algo = df.algo.astype('str')
+    df.time = df.time.astype('float')
+    df.space = df.space.astype('int')
+    df.deviation = df.deviation.astype('float')
+    return total_results, df
+
+def epsilon_pareto_front(selected_node_count, problems, timeout):
+    total_results = []
+    df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
+    epsilon_factor_array = [10, 10000]
+
+    for epsilon_factor in epsilon_factor_array:
+        epoch_results = []
+        for problem in problems:
+            # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            s11 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True, epsilon_factor)
+
+            s2 = solve_for_tree(prime_factor_tree(selected_node_count, False, False), problem, timeout, True, epsilon_factor)
+            s3 = solve_for_tree(prime_factor_tree(selected_node_count, True, False), problem, timeout, True, epsilon_factor)
+
+            s4 = solve_for_tree(one_vs_all_split(selected_node_count), problem, timeout, True, epsilon_factor)
+
+            s5 = solve_for_tree(approximate_tree(selected_node_count, 2), problem, timeout, True, epsilon_factor)
+            s6 = solve_for_tree(approximate_tree(selected_node_count, 3), problem, timeout, True, epsilon_factor)
+            s7 = solve_for_tree(approximate_tree(selected_node_count, 4), problem, timeout, True, epsilon_factor)
+            s8 = solve_for_tree(approximate_tree(selected_node_count, 5), problem, timeout, True, epsilon_factor)
+            s9 = solve_for_tree(approximate_tree(selected_node_count, 6), problem, timeout, True, epsilon_factor)
+            s10 = solve_for_tree(approximate_tree(selected_node_count, 7), problem, timeout, True, epsilon_factor)
+
+            xx_results = [s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
+            for res in xx_results:
+                # The name is split due to the very verbose and varying naming for prime trees
+                df.loc[len(df)] = [epsilon_factor, res.name.split('|')[0], res.time, res.space, res.deviation]
+
+            # for xx_r in xx_results:
+            # dot_export_actual_workload(xx_r.tree)
+            epoch_results.append(xx_results)
+        total_results.append(epoch_results)
+    # unfortunately we have to enforce the column types manually or some will be object which
+    # will break aggregation.
+    df.epsilon = df.epsilon.astype('int')
     df.algo = df.algo.astype('str')
     df.time = df.time.astype('float')
     df.space = df.space.astype('int')
@@ -115,6 +164,31 @@ def plot_data(df, min_nodes, max_nodes):
            title='%-Deviation from optimum One Split Strategy')
     deviation.plot.bar(ax=ax)
     plt.show()
+
+def plot_data_pareto(df):
+    fig, ax = plt.subplots()
+    ax.set(xlabel='Space', ylabel='Time', title=f'todo')
+    plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
+    plot_group.plot.scatter(x='space', y='time', label="ABC", ax=ax, c='algo', colormap='inferno')
+    plt.show()
+
+    # y_axises = ['time', 'space', 'deviation']
+    # for y_axis in y_axises:
+    #     fig, ax = plt.subplots()
+    #     ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
+    #     plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
+    #     for name, group in plot_group:
+    #         group.plot(x='nodes', y=y_axis, label=name, ax=ax)
+    #     plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
+    #     plt.show()
+    #
+    # deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1)*100
+    # deviation = deviation.drop(columns=['nodes'])
+    # fig, ax = plt.subplots()
+    # ax.set(xlabel='Split Strategies', ylabel='%',
+    #        title='%-Deviation from optimum One Split Strategy')
+    # deviation.plot.bar(ax=ax)
+    # plt.show()
 
 
 if __name__ == '__main__':
