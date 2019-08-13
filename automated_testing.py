@@ -93,6 +93,7 @@ def generate_problems(num_epochs):
                                 len(param_query_ids)))
     return problems
 
+
 def plot_data(df, min_nodes, max_nodes):
     y_axises = ['time', 'space', 'deviation']
     for y_axis in y_axises:
@@ -104,10 +105,14 @@ def plot_data(df, min_nodes, max_nodes):
         plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
         plt.show()
 
-    divergence = (df.groupby('algo').mean() / df.groupby('algo').mean().loc['One Split']) - 1
-    divergence = divergence.drop(columns=['nodes'])
-    divergence.plot.bar()
+    deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1)*100
+    deviation = deviation.drop(columns=['nodes'])
+    fig, ax = plt.subplots()
+    ax.set(xlabel='Split Strategies', ylabel='%',
+           title='%-Deviation from optimum One Split Strategy')
+    deviation.plot.bar(ax=ax)
     plt.show()
+
 
 if __name__ == '__main__':
     automated_test()

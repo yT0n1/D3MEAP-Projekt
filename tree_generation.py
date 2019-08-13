@@ -60,7 +60,7 @@ def binary_tree(nr_leaf_nodes):
 
 
 def one_split_tree(nr_leaf_nodes, should_squeeze=True, use_normed=False):
-    parent = SolverNode("One Split", should_squeeze, use_normed)
+    parent = SolverNode("Complete", should_squeeze, use_normed)
     append(parent, [nr_leaf_nodes])
     add_split_ratios(parent)
     number_tree_nodes(parent)
