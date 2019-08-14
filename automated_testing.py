@@ -13,7 +13,6 @@ from solver_node import solve_for_tree
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
 
 import numpy as np
-import matplotlib.cm as cm
 
 mpl.rcParams['figure.dpi'] = 400
 
@@ -33,20 +32,22 @@ def automated_test():
     min_nodes = 2
     max_nodes = 30
     timeout = 15
-    num_problems = 4
+    num_problems = 3
     should_squeeze = False
     epsilon_factor = 10000
 
     problems = generate_problems(num_problems)
 
-    total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
-    plot_data(df, min_nodes, max_nodes)
+    #total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
+    #plot_data(df, min_nodes, max_nodes)
 
-    #selected_node_count = 12
+    selected_node_count = 12
     #pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
     #plot_data_pareto(df)
 
-    # plot_data(df, min_nodes, max_nodes)
+    timeout_results, df = timeout_tests(selected_node_count, problems)
+    plot_data_timeout(df)
+
     df.to_csv("out.csv")
 
 
@@ -156,6 +157,36 @@ def epsilon_pareto_front(selected_node_count, problems, timeout):
     df.deviation = df.deviation.astype('float')
     return total_results, df
 
+def timeout_tests(selected_node_count, problems):
+    total_results = []
+    df = pd.DataFrame(columns=['timeout', 'algo', 'time', 'space', 'deviation'])
+    timout_array = np.arange(20)
+
+    for timeout in timout_array:
+        epoch_results = []
+        for problem in problems:
+            # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, False, 0)
+
+            xx_results = [s1]
+            for res in xx_results:
+                # The name is split due to the very verbose and varying naming for prime trees
+                df.loc[len(df)] = [timeout, res.name.split('|')[0], res.time, res.space,
+                                   res.deviation]
+
+            # for xx_r in xx_results:
+            # dot_export_actual_workload(xx_r.tree)
+            epoch_results.append(xx_results)
+        total_results.append(epoch_results)
+    # unfortunately we have to enforce the column types manually or some will be object which
+    # will break aggregation.
+    df.timeout = df.timeout.astype('int')
+    df.algo = df.algo.astype('str')
+    df.time = df.time.astype('float')
+    df.space = df.space.astype('int')
+    df.deviation = df.deviation.astype('float')
+    return total_results, df
+
 
 def generate_problems(num_epochs):
     problems = []
@@ -195,7 +226,6 @@ def plot_data(df, min_nodes, max_nodes):
            title='%-Deviation from optimum One Split Strategy')
     plt.show()
 
-
 def plot_data_pareto(df):
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
     for algo in plot_group['algo'].unique():
@@ -219,6 +249,25 @@ def plot_data_pareto(df):
                                                          ax=axs[2],
                                                          colormap='cool',
                                                          c=color)
+        plt.tight_layout()
+        plt.show()
+
+def plot_data_timeout(df):
+    plot_group = df.groupby(['algo', 'timeout'], as_index=False).mean()
+    for algo in plot_group['algo'].unique():
+        fig, axs = plt.subplots(1, 3, figsize=(10,3))
+        axs[0].set(xlabel='Timeout', ylabel='Space', title='Space / TImeout Relation')
+        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
+                                                         y='space',
+                                                         ax=axs[0])
+        axs[1].set(xlabel='Timeout', ylabel='Time', title='Time / TImeout Relation')
+        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
+                                                         y='time',
+                                                         ax=axs[1])
+        axs[2].set(xlabel='Timeout', ylabel='Deviation', title='Deviation / TImeout Relation')
+        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
+                                                         y='deviation',
+                                                         ax=axs[2])
         plt.tight_layout()
         plt.show()
 
