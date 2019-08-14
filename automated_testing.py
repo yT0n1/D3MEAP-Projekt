@@ -1,18 +1,17 @@
-import random
 import os
+import random
 import sys
 from datetime import datetime
 
 import math
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 
 from playground import Problem
 from solver_node import solve_for_tree
 from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree
-
-import numpy as np
 
 mpl.rcParams['figure.dpi'] = 400
 
@@ -150,11 +149,11 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
     total_results = []
     df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
 
-
     for epsilon_factor in epsilon_factor_array:
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            print(f"\n SOLVING: EPSILON FAC {epsilon_factor}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
             s11 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True,
                                  epsilon_factor)
 
@@ -206,10 +205,13 @@ def timeout_tests(problems, selected_node_count, maximum_timeout, should_squeeze
     for timeout in timout_array:
         epoch_results = []
         for problem in problems:
+            print(f"\n SOLVING: TIMEOUT {timeout}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
             s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, should_squeeze, epsilon_factor)
-
-            xx_results = [s1]
+            s2 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True, epsilon_factor)
+            s1.name = "OneSplitNoEP"
+            s2.name = "OneSplitWithEP"
+            xx_results = [s1,s2]
             for res in xx_results:
                 # The name is split due to the very verbose and varying naming for prime trees
                 df.loc[len(df)] = [timeout, res.name.split('|')[0], res.time, res.space,
