@@ -18,6 +18,8 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     assert round(sum(workshare_split), 10) == 1
     assert len(workshare_split) == param_num_nodes
 
+    extensive_logging = False
+
     def objective():
         sum = 0
         for f in range(param_num_fragments):
@@ -120,50 +122,49 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_3(problem)
     problem = nb_4(problem)
 
-
-    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 1)])
+    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 0)])
     solver.actualSolve(problem)
     #problem.solve(PULP_CBC_CMD(maxSeconds=timeout_sec, threads=4))
 
-    print('\n\nSOLVING:', name)
-    print("")
-    print("##### LOCATION #####")
-    print_location(var_location, param_num_nodes, param_num_fragments)
+    #print('\n\nSOLVING:', name)
+    #print("")
+    #print("##### LOCATION #####")
+    #print_location(var_location, param_num_nodes, param_num_fragments)
 
-    print("")
-    print("##### RUNNABLE #####")
-    print_location_adaptive(var_runnable, param_num_nodes, param_query_ids)
+    #print("")
+    #print("##### RUNNABLE #####")
+    #print_location_adaptive(var_runnable, param_num_nodes, param_query_ids)
 
-    print("")
-    print("##### WORKSHARE #####")
-    print_location_adaptive(var_workshare, param_num_nodes, param_query_ids, False)
+    #print("")
+    #print("##### WORKSHARE #####")
+    #print_location_adaptive(var_workshare, param_num_nodes, param_query_ids, False)
 
-    print("")
-    print("##### WORKLOAD PERCENTAGES #####")
+    #print("")
+    #print("##### WORKLOAD PERCENTAGES #####")
     workload_percentages = print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
 
-    print("")
+    #print("")
 
     sum_workload = 0
     for loc in var_workshare.keys():
         sum_workload += var_workshare[loc].varValue
 
-    print("Sum Workload: ", str(sum_workload))
+    #print("Sum Workload: ", str(sum_workload))
     if should_squeeze:
-        print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
-              "{})".format(str(float(1) / param_num_nodes)))
+        #print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
+              #"{})".format(str(float(1) / param_num_nodes)))
         space_required = problem.objective.value() - epsilon_factor * var_epsilon.value()
     elif use_normed:
-        print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
-              "{})".format(str(float(1) / param_num_nodes)))
+        #print("Epsilon:", str(var_epsilon.value()), "(Optimum ",
+              #"{})".format(str(float(1) / param_num_nodes)))
         space_required = (problem.objective.value() - epsilon_factor * var_epsilon.value()) * sum(param_fragment_sizes)
     else:
         space_required = problem.objective.value()
-    print("Objective Value:", str(space_required))
+    #print("Objective Value:", str(space_required))
 
-    print('Deviation ', derivation_from_worksplit(workload_percentages, workshare_split))
-    print('Nr. Vars:', problem.numVariables())
-    print('Solved:', name, '\n\n\n')
+    #print('Deviation ', derivation_from_worksplit(workload_percentages, workshare_split))
+    #print('Nr. Vars:', problem.numVariables())
+    #print('Solved:', name, '\n\n\n')
     return problem, var_location, var_runnable, var_workshare, space_required, workload_percentages
 
 
@@ -186,7 +187,7 @@ class SolverNode(Node):
             size = sum(self.problem.param_fragment_size[f] * mask[f] for f in range(len(mask)))
             return size
         elif not self.problem.param_query_ids:
-            print("Node Skipped: ",self.name)
+            #print("Node Skipped: ",self.name)
             for c in self.children:
                 p = copy.deepcopy(self.problem)
                 self.workshare_split = []
@@ -224,14 +225,14 @@ class SolverNode(Node):
 def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor):
     problem = copy.deepcopy(problem)
     start = time.time()
-    print('\nSolving Tree', tree_root.name)
+    #print('\nSolving Tree', tree_root.name)
     tree_root.problem = problem
     total_space = [node.solve(timeout, epsilon_factor, should_squeeze) for node in LevelOrderIter(tree_root)]
 
-    print('Split Space required', total_space)
-    print('In total ', sum(total_space))
+    #print('Split Space required', total_space)
+    #print('In total ', sum(total_space))
     total_deviation = sum([node.workshare_deviation for node in LevelOrderIter(tree_root)])
-    print('Total Deviation ',total_deviation)
+    #print('Total Deviation ',total_deviation)
     end = time.time()
     runtime = end - start
     aborted = runtime >= timeout if timeout else False

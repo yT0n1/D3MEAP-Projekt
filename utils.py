@@ -19,8 +19,8 @@ def print_location(var, index_x, index_y, cast_to_int=True):
                 print_string += str(int(var[(f, n)].varValue)) + " "
             else:
                 print_string += "{0:.5f} ".format(round(var[(f, n)].varValue, 5))
-        print(print_string)
-    print(" ")
+        #print(print_string)
+    #print(" ")
 
 
 def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
@@ -31,7 +31,7 @@ def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
         space = " " * 7
     for index in indeces:
         header += space + str(index)
-    print(header)
+    #print(header)
     for n in range(index_x):
         print_string = "Node " + str(n) + ": "
         for f in indeces:
@@ -39,8 +39,8 @@ def print_location_adaptive(var, index_x, indeces, cast_to_int=True):
                 print_string += str(int(var[(f, n)].varValue)) + " "
             else:
                 print_string += "{0:.5f} ".format(round(var[(f, n)].varValue, 5))
-        print(print_string)
-    print(" ")
+        #print(print_string)
+    #print(" ")
 
 def print_workload(var_workshare, param_num_nodes, param_query_workload, query_ids):
     workload_percentages = []
@@ -57,7 +57,7 @@ def print_workload(var_workshare, param_num_nodes, param_query_workload, query_i
             specific_workload_percentage.append(sum_list[n]/total_workload_sum)
             print_str += str(round(sum_list[n]/total_workload_sum, 4)) + " "
         workload_percentages.append(specific_workload_percentage)
-        print(print_str)
+        #print(print_str)
     return workload_percentages
 
 # Convience function to auto-generate a fair splitting strategy

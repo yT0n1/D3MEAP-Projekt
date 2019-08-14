@@ -1,4 +1,7 @@
 import random
+import os
+import sys
+from datetime import datetime
 
 import math
 import matplotlib as mpl
@@ -27,20 +30,21 @@ def generate_queries(num_queries, num_fragments):
 
 def automated_test():
     # Configuration
-    min_nodes = 3
-    max_nodes = 6
+    min_nodes = 2
+    max_nodes = 30
     timeout = 15
-    num_problems = 3
-    should_squeeze = True
+    num_problems = 4
+    should_squeeze = False
     epsilon_factor = 10000
 
     problems = generate_problems(num_problems)
 
-    # total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
+    total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
+    plot_data(df, min_nodes, max_nodes)
 
-    selected_node_count = 12
-    pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
-    plot_data_pareto(df)
+    #selected_node_count = 12
+    #pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
+    #plot_data_pareto(df)
 
     # plot_data(df, min_nodes, max_nodes)
     df.to_csv("out.csv")
@@ -53,7 +57,9 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
     for node_count in range(min_nodes, max_nodes + 1):
         epoch_results = []
         for problem in problems:
+            print(f"\n SOLVING: NODE COUNT { node_count }, PROBLEM { problems.index(problem) } AT { str(datetime.now()) }")
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
+            sys.stdout = open(os.devnull, "w")
             s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze,
                                  epsilon_factor)
 
@@ -77,6 +83,7 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
                                 epsilon_factor)
             s10 = solve_for_tree(approximate_tree(node_count, 7), problem, timeout, should_squeeze,
                                  epsilon_factor)
+            sys.stdout = sys.__stdout__
 
             xx_results = [s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
             for res in xx_results:
@@ -153,8 +160,8 @@ def epsilon_pareto_front(selected_node_count, problems, timeout):
 def generate_problems(num_epochs):
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(10, 20), 1)[0]
-        param_num_queries = random.sample(range(5, 10), 1)[0]
+        param_num_fragments = random.sample(range(100, 200), 1)[0]
+        param_num_queries = random.sample(range(5, 15), 1)[0]
 
         param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
         param_queries = generate_queries(param_num_queries, param_num_fragments)
