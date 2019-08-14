@@ -33,8 +33,13 @@ def automated_test():
     test_pareto = False
     test_timeout = True
 
-    # General Configuration
+    # General Configuration for the Problems
     num_problems = 3
+    min_fragments = 100
+    max_fragments = 200
+    min_queries = 10
+    max_queries = 15
+    num_workloads = 3
 
     # Configuration Node Count
     NODES_min_nodes = 2
@@ -50,12 +55,13 @@ def automated_test():
 
     # Configuration Timeout Behaviour
     TIMEOUT_selected_node_count = 12
-    TIMEOUT_maximum_timeout = 40
+    TIMEOUT_maximum_timeout = 10
     TIMEOUT_should_squeeze = False
     TIMEOUT_epsilon_factor = 10000
 
 
-    problems = generate_problems(num_problems)
+    problems = generate_problems(num_problems, min_fragments, max_fragments, min_queries, max_queries, num_workloads)
+    df = None
 
     if test_node_count:
         total_results, df = test_with_nodes(problems,
@@ -195,7 +201,7 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
 def timeout_tests(problems, selected_node_count, maximum_timeout, should_squeeze, epsilon_factor):
     total_results = []
     df = pd.DataFrame(columns=['timeout', 'algo', 'time', 'space', 'deviation'])
-    timout_array = np.arange(maximum_timeout)
+    timout_array = np.arange(1, maximum_timeout)
 
     for timeout in timout_array:
         epoch_results = []
@@ -223,13 +229,13 @@ def timeout_tests(problems, selected_node_count, maximum_timeout, should_squeeze
     return total_results, df
 
 
-def generate_problems(num_epochs):
+def generate_problems(num_epochs, min_fragments, max_fragments, min_queries, max_queries, num_workloads):
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(200, 300), 1)[0]
-        param_num_queries = random.sample(range(10, 25), 1)[0]
+        param_num_fragments = random.sample(range(min_fragments, max_fragments), 1)[0]
+        param_num_queries = random.sample(range(min_queries, max_queries), 1)[0]
 
-        problem = add_problem_properties(param_num_fragments, param_num_queries, 3)
+        problem = add_problem_properties(param_num_fragments, param_num_queries, num_workloads)
 
         problems.append(problem)
     return problems
