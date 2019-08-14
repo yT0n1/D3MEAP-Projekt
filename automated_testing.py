@@ -46,35 +46,47 @@ def automated_test():
     # Configuration Pareto Frontier
     PARETO_selected_node_count = 12
     PARETO_timeout = 15
+    PARETO_epsilon_factor_array = [10, 100, 1000, 3000, 5000, 7500, 10000, 500000, 1000000]
 
     # Configuration Timeout Behaviour
     TIMEOUT_selected_node_count = 12
+    TIMEOUT_maximum_timeout = 40
+    TIMEOUT_should_squeeze = False
+    TIMEOUT_epsilon_factor = 10000
 
 
     problems = generate_problems(num_problems)
 
     if test_node_count:
-        total_results, df = test_with_nodes(NODES_min_nodes,
+        total_results, df = test_with_nodes(problems,
+                                            NODES_min_nodes,
                                             NODES_max_nodes,
-                                            problems,
                                             NODES_timeout,
                                             NODES_should_squeeze,
                                             NODES_epsilon_factor)
         plot_data(df, NODES_min_nodes, NODES_max_nodes)
     if test_pareto:
-        pareto_results, df = epsilon_pareto_front(PARETO_selected_node_count, problems, PARETO_timeout)
+        pareto_results, df = epsilon_pareto_front(problems,
+                                                  PARETO_selected_node_count,
+                                                  PARETO_timeout,
+                                                  PARETO_epsilon_factor_array)
         plot_data_pareto(df)
     if test_timeout:
-        timeout_results, df = timeout_tests(TIMEOUT_selected_node_count, problems)
+        timeout_results, df = timeout_tests(problems,
+                                            TIMEOUT_selected_node_count,
+                                            TIMEOUT_maximum_timeout,
+                                            TIMEOUT_should_squeeze,
+                                            TIMEOUT_epsilon_factor)
         plot_data_timeout(df)
 
-    df.to_csv("out.csv")
+    if df is not None:
+        df.to_csv("out.csv")
 
 
 def test_2_2():
     problem1 = Problem()
 
-def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor):
+def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, epsilon_factor):
     total_results = []
     df = pd.DataFrame(columns=['nodes', 'algo', 'time', 'space', 'deviation'])
 
@@ -128,10 +140,10 @@ def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, eps
     return total_results, df
 
 
-def epsilon_pareto_front(selected_node_count, problems, timeout):
+def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_array):
     total_results = []
     df = pd.DataFrame(columns=['epsilon', 'algo', 'time', 'space', 'deviation'])
-    epsilon_factor_array = [10, 100, 1000, 3000, 5000, 7500, 10000, 500000, 1000000]
+
 
     for epsilon_factor in epsilon_factor_array:
         epoch_results = []
@@ -180,16 +192,16 @@ def epsilon_pareto_front(selected_node_count, problems, timeout):
     df.deviation = df.deviation.astype('float')
     return total_results, df
 
-def timeout_tests(selected_node_count, problems):
+def timeout_tests(problems, selected_node_count, maximum_timeout, should_squeeze, epsilon_factor):
     total_results = []
     df = pd.DataFrame(columns=['timeout', 'algo', 'time', 'space', 'deviation'])
-    timout_array = np.arange(20)
+    timout_array = np.arange(maximum_timeout)
 
     for timeout in timout_array:
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
-            s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True, 1000000)
+            s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, should_squeeze, epsilon_factor)
 
             xx_results = [s1]
             for res in xx_results:
