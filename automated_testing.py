@@ -166,7 +166,7 @@ def timeout_tests(selected_node_count, problems):
         epoch_results = []
         for problem in problems:
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
-            s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, False, 0)
+            s1 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True, 1000000)
 
             xx_results = [s1]
             for res in xx_results:
@@ -191,13 +191,12 @@ def timeout_tests(selected_node_count, problems):
 def generate_problems(num_epochs):
     problems = []
     for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(100, 200), 1)[0]
-        param_num_queries = random.sample(range(5, 15), 1)[0]
+        param_num_fragments = random.sample(range(200, 300), 1)[0]
+        param_num_queries = random.sample(range(10, 25), 1)[0]
 
         param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
         param_queries = generate_queries(param_num_queries, param_num_fragments)
-        param_query_frequency = [random.choices(range(1, 100), k=param_num_queries) for i in
-                                 range(1)]
+        param_query_frequency = [random.choices(range(1, 100), k=param_num_queries) for i in range(3)]
         param_query_cost = random.choices(range(1, 100), k=param_num_queries)
         param_query_ids = [i for i in range(len(param_query_cost))]
 
