@@ -28,26 +28,45 @@ def generate_queries(num_queries, num_fragments):
 
 
 def automated_test():
-    # Configuration
-    min_nodes = 3
-    max_nodes = 6
-    timeout = 15
+    # What do you want to test?
+    test_node_count = False
+    test_pareto = False
+    test_timeout = True
+
+    # General Configuration
     num_problems = 3
-    should_squeeze = False
-    epsilon_factor = 10000
+
+    # Configuration Node Count
+    NODES_min_nodes = 2
+    NODES_max_nodes = 30
+    NODES_timeout = 15
+    NODES_should_squeeze = False
+    NODES_epsilon_factor = 10000
+
+    # Configuration Pareto Frontier
+    PARETO_selected_node_count = 12
+    PARETO_timeout = 15
+
+    # Configuration Timeout Behaviour
+    TIMEOUT_selected_node_count = 12
+
 
     problems = generate_problems(num_problems)
 
-    # total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
-    #total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
-    #plot_data(df, min_nodes, max_nodes)
-
-    selected_node_count = 12
-    #pareto_results, df = epsilon_pareto_front(selected_node_count, problems, timeout)
-    #plot_data_pareto(df)
-
-    timeout_results, df = timeout_tests(selected_node_count, problems)
-    plot_data_timeout(df)
+    if test_node_count:
+        total_results, df = test_with_nodes(NODES_min_nodes,
+                                            NODES_max_nodes,
+                                            problems,
+                                            NODES_timeout,
+                                            NODES_should_squeeze,
+                                            NODES_epsilon_factor)
+        plot_data(df, NODES_min_nodes, NODES_max_nodes)
+    if test_pareto:
+        pareto_results, df = epsilon_pareto_front(PARETO_selected_node_count, problems, PARETO_timeout)
+        plot_data_pareto(df)
+    if test_timeout:
+        timeout_results, df = timeout_tests(TIMEOUT_selected_node_count, problems)
+        plot_data_timeout(df)
 
     df.to_csv("out.csv")
 
