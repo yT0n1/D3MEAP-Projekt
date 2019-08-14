@@ -29,8 +29,8 @@ def generate_queries(num_queries, num_fragments):
 
 def automated_test():
     # Configuration
-    min_nodes = 2
-    max_nodes = 30
+    min_nodes = 3
+    max_nodes = 6
     timeout = 15
     num_problems = 3
     should_squeeze = False
@@ -38,6 +38,7 @@ def automated_test():
 
     problems = generate_problems(num_problems)
 
+    # total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
     #total_results, df = test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor)
     #plot_data(df, min_nodes, max_nodes)
 
@@ -50,6 +51,9 @@ def automated_test():
 
     df.to_csv("out.csv")
 
+
+def test_2_2():
+    problem1 = Problem()
 
 def test_with_nodes(min_nodes, max_nodes, problems, timeout, should_squeeze, epsilon_factor):
     total_results = []
@@ -194,16 +198,23 @@ def generate_problems(num_epochs):
         param_num_fragments = random.sample(range(200, 300), 1)[0]
         param_num_queries = random.sample(range(10, 25), 1)[0]
 
-        param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
-        param_queries = generate_queries(param_num_queries, param_num_fragments)
-        param_query_frequency = [random.choices(range(1, 100), k=param_num_queries) for i in range(3)]
-        param_query_cost = random.choices(range(1, 100), k=param_num_queries)
-        param_query_ids = [i for i in range(len(param_query_cost))]
+        problem = add_problem_properties(param_num_fragments, param_num_queries, 3)
 
-        problems.append(Problem(param_fragment_size, param_queries,
-                                param_query_frequency, param_query_cost, param_query_ids,
-                                len(param_query_ids)))
+        problems.append(problem)
     return problems
+
+
+def add_problem_properties(param_num_fragments, param_num_queries, workloads):
+    param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
+    param_queries = generate_queries(param_num_queries, param_num_fragments)
+    param_query_frequency = [random.choices(range(1, 100), k=param_num_queries)
+                             for _ in range(workloads)]
+    param_query_cost = random.choices(range(1, 100), k=param_num_queries)
+    param_query_ids = [i for i in range(len(param_query_cost))]
+    problem = Problem(param_fragment_size, param_queries,
+                      param_query_frequency, param_query_cost, param_query_ids,
+                      len(param_query_ids))
+    return problem
 
 
 def plot_data(df, min_nodes, max_nodes):
