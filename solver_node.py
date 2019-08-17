@@ -160,12 +160,14 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
         space_required = (problem.objective.value() - epsilon_factor * var_epsilon.value()) * sum(param_fragment_sizes)
     else:
         space_required = problem.objective.value()
+
+    total_replication = sum(param_fragment_sizes) * param_num_nodes
     #print("Objective Value:", str(space_required))
 
     #print('Deviation ', derivation_from_worksplit(workload_percentages, workshare_split))
     #print('Nr. Vars:', problem.numVariables())
     #print('Solved:', name, '\n\n\n')
-    return problem, var_location, var_runnable, var_workshare, space_required, workload_percentages
+    return problem, var_location, var_runnable, var_workshare, space_required, workload_percentages, total_replication
 
 
 class SolverNode(Node):
@@ -177,6 +179,7 @@ class SolverNode(Node):
         self.use_normed = use_normed
         self.workshare_deviation = 0
         self.epsilon_factor = 0
+        self.total_replication = 0
 
     def solve(self, timeout_secs, epsilon_factor, should_squeeze):
         self.epsilon_factor = epsilon_factor
@@ -193,7 +196,7 @@ class SolverNode(Node):
                 self.workshare_split = []
                 c.problem = p
             return 0
-        solution, var_location, var_runnable, var_workshare, space, workload_percentages = \
+        solution, var_location, var_runnable, var_workshare, space, workload_percentages, total_replication = \
             solve_split_adaptive(
             self.problem.param_fragment_size, self.problem.param_queries,
             self.problem.param_query_frequency,
@@ -202,6 +205,7 @@ class SolverNode(Node):
             should_squeeze,
             self.root.use_normed)
 
+        self.total_replication = total_replication
         self.workshare_split = workload_percentages
         self.workshare_deviation = derivation_from_worksplit(self.workshare_split, self.split_ratio)
         for c in range(len(self.children)):
@@ -237,4 +241,4 @@ def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor):
     runtime = end - start
     aborted = runtime >= timeout if timeout else False
     return Observation(sum(total_space), end - start, tree_root, aborted,
-                       total_deviation, tree_root.name)
+                       total_deviation, tree_root.name, tree_root.total_replication)

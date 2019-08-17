@@ -78,13 +78,15 @@ def automated_test():
                                             NODES_timeout,
                                             NODES_should_squeeze,
                                             NODES_epsilon_factor)
-        plot_data(df, NODES_min_nodes, NODES_max_nodes)
+        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems)
+        df.to_csv("test_node_out.csv")
     if test_pareto:
         pareto_results, df = epsilon_pareto_front(problems,
                                                   PARETO_selected_node_count,
                                                   PARETO_timeout,
                                                   PARETO_epsilon_factor_array)
         plot_data_pareto(df)
+        df.to_csv("data_pareto_out.csv")
     if test_timeout:
         timeout_results, df = timeout_tests(problems,
                                             TIMEOUT_selected_node_count,
@@ -92,9 +94,7 @@ def automated_test():
                                             TIMEOUT_should_squeeze,
                                             TIMEOUT_epsilon_factor)
         plot_data_timeout(df)
-
-    if df is not None:
-        df.to_csv("out.csv")
+        df.to_csv("test_timeout_out.csv")
 
 
 def test_2_2():
@@ -132,13 +132,15 @@ def test_2_2():
 
 def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, epsilon_factor):
     total_results = []
-    df = pd.DataFrame(columns=['nodes', 'algo', 'time', 'space', 'deviation'])
+    df = pd.DataFrame(columns=['nodes', 'algo', 'time', 'space', 'deviation', 'total_replication'])
 
     for node_count in range(min_nodes, max_nodes + 1):
         epoch_results = []
         for problem in problems:
-            print(
-                f"\n SOLVING: NODE COUNT {node_count}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
+            total_replication = sum(problem.param_fragment_size) * node_count
+            print(f"\n SOLVING: NODE COUNT { node_count }, PROBLEM { problems.index(problem) } AT { str(datetime.now()) }, MAX SIZE { total_replication }")
+
+
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
             sys.stdout = open(os.devnull, "w")
             s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze,
@@ -170,7 +172,7 @@ def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, eps
             for res in xx_results:
                 # The name is split due to the very verbose and varying naming for prime trees
                 df.loc[len(df)] = [node_count, res.name.split('|')[0], res.time, res.space,
-                                   res.deviation]
+                                   res.deviation, res.total_replication]
             # for xx_r in xx_results:
             # dot_export_actual_workload(xx_r.tree)
             epoch_results.append(xx_results)
@@ -290,7 +292,7 @@ def generate_problems(num_epochs, min_fragments, max_fragments, min_queries, max
 
 
 def add_problem_properties(param_num_fragments, param_num_queries, workloads):
-    param_fragment_size = random.choices(range(1, 100), k=param_num_fragments)
+    param_fragment_size = random.choices(range(1, 3000), k=param_num_fragments)
     param_queries = generate_queries(param_num_queries, param_num_fragments)
     param_query_frequency = [random.choices(range(1, 100), k=param_num_queries)
                              for _ in range(workloads)]
@@ -302,17 +304,24 @@ def add_problem_properties(param_num_fragments, param_num_queries, workloads):
     return problem
 
 
-def plot_data(df, min_nodes, max_nodes):
-    y_axises = ['time', 'space', 'deviation']
+def plot_data(df, min_nodes, max_nodes, problems):
+    problem_hardness = []
+    for problem in problems:
+        problem_hardness.append(sum(problem.param_fragment_size))
+    avg_problem_hardness = np.mean(problem_hardness)
+    y_axises = ['time', 'deviation', 'space']
     for y_axis in y_axises:
         fig, ax = plt.subplots()
         ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
+        if y_axis == 'space':
+            for node_count in range(min_nodes,max_nodes+1):
+                df = df.append({'algo':'Total Replication', 'space':(avg_problem_hardness*node_count), 'nodes':node_count, 'time':0, 'deviation':0, 'total_replication':0}, ignore_index=True)
         plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
         for name, group in plot_group:
             group.plot(x='nodes', y=y_axis, label=name, ax=ax)
         plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
         plt.show()
-
+    df = df[df.algo != "Total Replication"]
     deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
     deviation = deviation.drop(columns=['nodes'])
     fig, ax = plt.subplots()
