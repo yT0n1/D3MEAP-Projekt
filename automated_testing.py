@@ -51,7 +51,7 @@ def automated_test():
     NODES_max_nodes = 30
     NODES_timeout = 15
     NODES_should_squeeze = False
-    NODES_epsilon_factor = 10000
+    NODES_epsilon_factor = 400000
 
     # Configuration Pareto Frontier
     PARETO_selected_node_count = 12
@@ -76,7 +76,15 @@ def automated_test():
                                             NODES_should_squeeze,
                                             NODES_epsilon_factor)
         plot_data(df, NODES_min_nodes, NODES_max_nodes, problems)
-        df.to_csv("test_node_out.csv")
+        df.to_csv("test_node_out_NOEP.csv")
+        total_results, df = test_with_nodes(problems,
+                                            NODES_min_nodes,
+                                            NODES_max_nodes,
+                                            NODES_timeout,
+                                            not NODES_should_squeeze,
+                                            NODES_epsilon_factor)
+        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems)
+        df.to_csv("test_node_out_EP.csv")
     if test_pareto:
         pareto_results, df = epsilon_pareto_front(problems,
                                                   PARETO_selected_node_count,
@@ -142,7 +150,6 @@ def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, eps
             sys.stdout = open(os.devnull, "w")
             s11 = solve_for_tree(one_split_tree(node_count), problem, timeout, should_squeeze,
                                  epsilon_factor)
-
             s2 = solve_for_tree(prime_factor_tree(node_count, False, False), problem, timeout,
                                 should_squeeze, epsilon_factor)
             s3 = solve_for_tree(prime_factor_tree(node_count, True, False), problem, timeout,
@@ -196,7 +203,6 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
                 f"\n SOLVING: EPSILON FAC {epsilon_factor}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
             s11 = solve_for_tree(one_split_tree(selected_node_count), problem, timeout, True,
                                  epsilon_factor)
-
             s2 = solve_for_tree(prime_factor_tree(selected_node_count, False, False), problem,
                                 timeout, True, epsilon_factor)
             s3 = solve_for_tree(prime_factor_tree(selected_node_count, True, False), problem,
