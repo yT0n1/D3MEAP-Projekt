@@ -19,23 +19,20 @@ mpl.rcParams['figure.dpi'] = 400
 def generate_queries(num_queries, num_fragments):
     queries = []
     used = [0] * num_fragments
-    for q in range(num_queries - 1):
-        temp_list = []
-        for f in range(num_fragments):
-            use = random.choice([0, 1])
-            used[f] = 1 if use else used[f]
-            temp_list.append(use)
-        if sum(temp_list) == 0:
-            temp_list[random.choice(range(num_fragments))] = 1  # to avoid empty query
-        queries.append(temp_list)
-    used[0] = 0  # to avoid empty query
-    queries.append([0 if i else 1 for i in used])
+    for q in range(num_queries-1):
+        nr_frag = np.random.binomial(num_fragments - 1, 0.3) + 1
+        chosen_fragments = np.random.choice(num_fragments, nr_frag, replace=False)
+        for fragment in chosen_fragments:
+            used[fragment] = 1
+        queries.append([1 if i in chosen_fragments else 0 for i in range(num_fragments)])
+    used[0] = 0 # to avoid empty
+    queries.append([0 if u else 1 for u in used])
     return queries
 
 
 def automated_test():
-    #df = test_2_2()
-    #exit()
+    df = test_2_2()
+    exit()
     # What do you want to test?
     test_node_count = False
     test_pareto = False
@@ -98,7 +95,7 @@ def automated_test():
 
 
 def test_2_2():
-    sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10]
     nodes = sizes
     fragments = sizes
     queries = sizes
