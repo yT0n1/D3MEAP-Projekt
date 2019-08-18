@@ -77,7 +77,7 @@ def automated_test():
                                             NODES_timeout,
                                             NODES_should_squeeze,
                                             NODES_epsilon_factor)
-        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems)
+        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems, NODES_should_squeeze)
         df.to_csv("test_node_out_NOEP.csv")
         total_results, df = test_with_nodes(problems,
                                             NODES_min_nodes,
@@ -85,7 +85,7 @@ def automated_test():
                                             NODES_timeout,
                                             not NODES_should_squeeze,
                                             NODES_epsilon_factor)
-        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems)
+        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems, not NODES_should_squeeze)
         df.to_csv("test_node_out_EP.csv")
     if test_pareto:
         pareto_results, df = epsilon_pareto_front(problems,
@@ -390,7 +390,7 @@ def add_problem_properties(param_num_fragments, param_num_queries, workloads):
     return problem
 
 
-def plot_data(df, min_nodes, max_nodes, problems):
+def plot_data(df, min_nodes, max_nodes, problems, squeezed):
     problem_hardness = []
     for problem in problems:
         problem_hardness.append(sum(problem.param_fragment_size))
@@ -413,10 +413,12 @@ def plot_data(df, min_nodes, max_nodes, problems):
     df = df[df.algo != "Total Replication"]
     deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
     deviation = deviation.drop(columns=['nodes'])
+    if squeezed:
+        deviation = deviation.drop(columns=['deviation'])
     fig, ax = plt.subplots()
     deviation.plot.bar(ax=ax)
     ax.set(xlabel='Split Strategies', ylabel='%',
-           title='%-Deviation from optimum One Split Strategy')
+           title='%-Deviation from optimum Complete Split Strategy')
     plt.show()
 
 
