@@ -14,7 +14,7 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
                          param_query_costs,
                          param_num_nodes, param_query_ids, name, workshare_split, timeout_sec,
                          epsilon_factor,
-                         should_squeeze=True, use_normed=False):
+                         should_squeeze=True, use_normed=False, first_solution=False):
     assert round(sum(workshare_split), 10) == 1
     assert len(workshare_split) == param_num_nodes
 
@@ -122,7 +122,12 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_3(problem)
     problem = nb_4(problem)
 
-    solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0), ("OutputFlag", 0)])
+    if not first_solution:
+        solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
+                                                  ("OutputFlag", 0)])
+    else:
+        solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
+                                                  ("OutputFlag", 0), ("SolutionLimit", 1)])
     solver.actualSolve(problem)
     #problem.solve(PULP_CBC_CMD(maxSeconds=timeout_sec, threads=4))
 
@@ -182,7 +187,7 @@ class SolverNode(Node):
         self.epsilon_factor = 0
         self.total_replication = 0
 
-    def solve(self, timeout_secs, epsilon_factor, should_squeeze):
+    def solve(self, timeout_secs, epsilon_factor, should_squeeze, first_solution):
         self.epsilon_factor = epsilon_factor
         if self.is_leaf:
             mask = [0] * len(self.problem.param_fragment_size)
@@ -204,7 +209,8 @@ class SolverNode(Node):
             self.problem.param_query_cost, len(self.children), self.problem.param_query_ids,
             self.name, self.split_ratio, timeout_secs, epsilon_factor,
             should_squeeze,
-            self.root.use_normed)
+            self.root.use_normed,
+            first_solution)
 
         self.total_replication = total_replication
         self.workshare_split = workload_percentages
@@ -227,12 +233,14 @@ class SolverNode(Node):
         self.split_ratio = [len(c.leaves) / reachable_leaves for c in self.children]
 
 
-def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor):
+def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor,
+                   first_solution=False):
     problem = copy.deepcopy(problem)
     start = time.time()
     #print('\nSolving Tree', tree_root.name)
     tree_root.problem = problem
-    total_space = [node.solve(timeout, epsilon_factor, should_squeeze) for node in LevelOrderIter(tree_root)]
+    total_space = [node.solve(timeout, epsilon_factor, should_squeeze, first_solution) for node in
+                   LevelOrderIter(tree_root)]
 
     #print('Split Space required', total_space)
     #print('In total ', sum(total_space))

@@ -106,11 +106,12 @@ def automated_test():
         compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
                                                      False)
         df.to_csv("test_heu_out_nosqueez.csv")
-        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems)
+        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems, False)
+
         compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
-                                                     True)
+                                                     True, NODES_epsilon_factor)
         df.to_csv("test_heu_out_squeez.csv")
-        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems)
+        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems, True)
 
 
 def runtime_increasing_factors():
@@ -281,32 +282,43 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
     return total_results, df
 
 
-def timeout_vs_heuristic_tests(problems, min_node, max_node, should_squeeze):
+def timeout_vs_heuristic_tests(problems, min_node, max_node, should_squeeze, epsilon=0):
     total_results = []
     df = pd.DataFrame(columns=['algo', 'time', 'space', 'deviation', 'nodes'])
-    epsilon_factor = 0
+    epsilon = 0
     for node in range(min_node, max_node + 1):
         for problem in problems:
             print(
-                f"\n SOLVING PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
+                f"\n SOLVING PROBLEM {problems.index(problem)} WITH {node} NODES AT"
+                f" {str(datetime.now())}")
             s5 = solve_for_tree(one_split_tree(node), problem, 900,
-                                should_squeeze, epsilon_factor)
+                                should_squeeze, epsilon)
 
             s1 = solve_for_tree(approximate_tree(node, 2), problem, 900,
-                                should_squeeze, epsilon_factor)
-            s2_time = s1.time if s1.time >= 10 else 10
-            s2 = solve_for_tree(one_split_tree(node), problem, s2_time,
-                                should_squeeze, epsilon_factor)
+                                should_squeeze, epsilon)
+            s2_time = s1.time
+            try:
+                s2 = solve_for_tree(one_split_tree(node), problem, s2_time,
+                                    should_squeeze, epsilon)
+            except:
+                print('Run again with first result')
+
+                s2 = solve_for_tree(one_split_tree(node), problem, 900,
+                                    should_squeeze, epsilon, True)
+
             s3 = solve_for_tree(one_vs_all_split(node), problem, 900,
-                                should_squeeze, epsilon_factor)
+                                should_squeeze, epsilon)
+            s4_time = s3.time
+            try:
+                s4 = solve_for_tree(one_split_tree(node), problem, s4_time,
+                                    should_squeeze, epsilon)
+            except:
+                print('Run again with first result')
+                s4 = solve_for_tree(one_split_tree(node), problem, 900,
+                                    should_squeeze, epsilon, True)
 
-            s4_time = s3.time if s3.time >= 10 else 10
-
-            s4 = solve_for_tree(one_split_tree(node), problem, s4_time,
-                                should_squeeze, epsilon_factor)
-
-            s2.name = 'LP with 2-Approx timeout'
-            s4.name = 'LP with One-vs-all timeout'
+            s2.name = 'Complete (2-Approx timeout)'
+            s4.name = 'Complete (one-vs-all timeout)'
             xx_results = [s1, s2, s3, s4, s5]
             for res in xx_results:
                 # The name is split due to the very verbose and varying naming for prime trees
@@ -418,7 +430,7 @@ def plot_data(df, min_nodes, max_nodes, problems, squeezed):
     plt.show()
 
 
-def plot_heu_vs_opt(df, min_nodes, max_nodes, problems):
+def plot_heu_vs_opt(df, min_nodes, max_nodes, problems, squeezes):
     problem_hardness = []
     for problem in problems:
         problem_hardness.append(sum(problem.param_fragment_size))
@@ -441,13 +453,14 @@ def plot_heu_vs_opt(df, min_nodes, max_nodes, problems):
     df = df[df.algo != "Total Replication"]
     deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
     deviation = deviation.drop(index=['Complete'])
-    deviation = deviation.drop(columns=['nodes'])
-    deviation = deviation.drop(columns=['total_replication', 'deviation'])
+    deviation = deviation.drop(columns=['nodes', 'total_replication'])
+    if not squeezes:
+        deviation = deviation.drop(columns=[ 'deviation'])
 
     fig, ax = plt.subplots()
     deviation.plot.bar(ax=ax)
     ax.set(xlabel='Split Strategies', ylabel='%',
-           title='%-Difference from optimum One Split')
+           title='%-Difference from optimum complete split')
     plt.show()
 
 
