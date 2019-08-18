@@ -141,7 +141,8 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
 
     #print("")
     #print("##### WORKLOAD PERCENTAGES #####")
-    workload_percentages = print_workload(var_workshare, param_num_nodes, param_query_workload, param_query_ids)
+    workload_percentages = print_workload(var_workshare, param_num_nodes, param_query_workload,
+    param_query_ids)
 
     #print("")
 

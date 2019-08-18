@@ -32,7 +32,7 @@ def generate_queries(num_queries, num_fragments):
 
 
 def automated_test():
-    # df = test_2_2()
+    # df = runtime_increasing_factors()
     # exit()
     # What do you want to test?
     test_node_count = False
@@ -103,13 +103,44 @@ def automated_test():
         plot_data_timeout(df)
         df.to_csv("test_timeout_out.csv")
     if compare_lp_heuristic:
-        compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes)
-        df.to_csv("test_heu_out.csv")
+        compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
+                                                     False)
+        df.to_csv("test_heu_out_nosqueez.csv")
+        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems)
+        compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
+                                                     True)
+        df.to_csv("test_heu_out_squeez.csv")
         plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems)
 
 
+def runtime_increasing_factors():
+    sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    df = pd.DataFrame(columns=['nodes', 'algo', 'time', 'query', 'fragment', 'space', 'deviation'])
+    df.nodes = df.nodes.astype('int')
+    df.algo = df.algo.astype('str')
+    df.fragment = df.time.astype('int')
+    df.space = df.space.astype('int')
+    df.query = df.deviation.astype('int')
+    for _ in range(3):
+        for size in sizes:
+            problem = add_problem_properties(size, size, 1)
+            s = solve_for_tree(one_split_tree(size), problem, 1200, False, 0)
+            df.loc[len(df)] = [size, s.name.split('|')[0], s.time, size, size, s.space,
+                               s.deviation]
+    df.to_csv('test221.csv', index=False)
+    n = df.groupby('nodes', as_index=False).mean()
+    q = df.groupby('query', as_index=False).mean()
+    f = df.groupby('fragment', as_index=False).mean()
+    fig, ax = plt.subplots()
+    n.plot(y='time', x='nodes', ax=ax, label='runtime')
+    ax.set(xlabel='factor', ylabel='average time in s',
+           title='average runtime for factors')
+    plt.xticks(sizes)
+    plt.show()
+    return df
 
-def test_2_2():
+
+def runtime_increasing_factors_combined():
     sizes = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
     nodes = sizes
     fragments = sizes
@@ -125,7 +156,7 @@ def test_2_2():
             for query in queries:
                 problem = add_problem_properties(fragment, query, 1)
                 for node in nodes:
-                    s = solve_for_tree(one_split_tree(node), problem, 900, False, 0)
+                    s = solve_for_tree(one_split_tree(node), problem, 1200, False, 0)
                     df.loc[len(df)] = [node, s.name.split('|')[0], s.time, query, fragment, s.space,
                                        s.deviation]
     df.to_csv('test22', index=False)
@@ -185,8 +216,8 @@ def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, eps
                 # The name is split due to the very verbose and varying naming for prime trees
                 df.loc[len(df)] = [node_count, res.name.split('|')[0], res.time, res.space,
                                    res.deviation, res.total_replication]
-            # for xx_r in xx_results:
-            #     dot_export_actual_workload(xx_r.tree)
+                dot_export_actual_workload(res.tree)
+
             epoch_results.append(xx_results)
         total_results.append(epoch_results)
     # unfortunately we have to enforce the column types manually or some will be object which
@@ -237,9 +268,8 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
                 # The name is split due to the very verbose and varying naming for prime trees
                 df.loc[len(df)] = [epsilon_factor, res.name.split('|')[0], res.time, res.space,
                                    res.deviation]
+                # dot_export_actual_workload(res.tree)
 
-            # for xx_r in xx_results:
-            # dot_export_actual_workload(xx_r.tree)
             epoch_results.append(xx_results)
         total_results.append(epoch_results)
     # unfortunately we have to enforce the column types manually or some will be object which
@@ -252,24 +282,30 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
     return total_results, df
 
 
-def timeout_vs_heuristic_tests(problems, min_node, max_node):
+def timeout_vs_heuristic_tests(problems, min_node, max_node, should_squeeze):
     total_results = []
     df = pd.DataFrame(columns=['algo', 'time', 'space', 'deviation', 'nodes'])
-    should_squeeze = False
-    epsilon_factor = None
+    epsilon_factor = 0
     for node in range(min_node, max_node + 1):
         for problem in problems:
+            print(
+                f"\n SOLVING PROBLEM {problems.index(problem)} AT {str(datetime.now())}")
+            s5 = solve_for_tree(one_split_tree(node), problem, 900,
+                                should_squeeze, epsilon_factor)
 
             s1 = solve_for_tree(approximate_tree(node, 2), problem, 900,
                                 should_squeeze, epsilon_factor)
-            s2 = solve_for_tree(one_split_tree(node), problem, s1.time,
+            s2_time = s1.time if s1.time >= 10 else 10
+            s2 = solve_for_tree(one_split_tree(node), problem, s2_time,
                                 should_squeeze, epsilon_factor)
             s3 = solve_for_tree(one_vs_all_split(node), problem, 900,
                                 should_squeeze, epsilon_factor)
-            s4 = solve_for_tree(one_split_tree(node), problem, s3.time,
+
+            s4_time = s3.time if s3.time >= 10 else 10
+
+            s4 = solve_for_tree(one_split_tree(node), problem, s4_time,
                                 should_squeeze, epsilon_factor)
-            s5 = solve_for_tree(one_split_tree(node), problem, 900,
-                                should_squeeze, epsilon_factor)
+
             s2.name = 'LP with 2-Approx timeout'
             s4.name = 'LP with One-vs-all timeout'
             xx_results = [s1, s2, s3, s4, s5]
@@ -401,8 +437,7 @@ def plot_heu_vs_opt(df, min_nodes, max_nodes, problems):
                     ignore_index=True)
         plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
         for name, group in plot_group:
-            if not (name == 'Complete' and y_axis == 'space'):
-                group.plot(x='nodes', y=y_axis, label=name, ax=ax)
+            group.plot(x='nodes', y=y_axis, label=name, ax=ax)
         plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
         plt.show()
     df = df[df.algo != "Total Replication"]
@@ -416,6 +451,7 @@ def plot_heu_vs_opt(df, min_nodes, max_nodes, problems):
     ax.set(xlabel='Split Strategies', ylabel='%',
            title='%-Difference from optimum One Split')
     plt.show()
+
 
 def plot_data_pareto(df):
     plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
