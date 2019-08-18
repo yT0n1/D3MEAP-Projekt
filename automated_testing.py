@@ -182,8 +182,7 @@ def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, eps
         epoch_results = []
         for problem in problems:
             total_replication = sum(problem.param_fragment_size) * node_count
-            print(
-                f"\n SOLVING: NODE COUNT {node_count}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}, MAX SIZE {total_replication}")
+            print(f"\n SOLVING: NODE COUNT {node_count}, PROBLEM {problems.index(problem)} AT {str(datetime.now())}, MAX SIZE {total_replication}")
 
             # s1 = solve_for_tree(one_split_tree(node_count), problem, timeout)
             sys.stdout = open(os.devnull, "w")
@@ -400,11 +399,8 @@ def plot_data(df, min_nodes, max_nodes, problems, squeezed):
         fig, ax = plt.subplots()
         ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
         if y_axis == 'space':
-            for node_count in range(min_nodes, max_nodes + 1):
-                df = df.append(
-                    {'algo': 'Total Replication', 'space': (avg_problem_hardness * node_count),
-                     'nodes': node_count, 'time': 0, 'deviation': 0, 'total_replication': 0},
-                    ignore_index=True)
+            for node_count in range(min_nodes,max_nodes+1):
+                df = df.append({'algo':'Total Replication', 'space':(avg_problem_hardness*node_count), 'nodes':node_count, 'time':0, 'deviation':0, 'total_replication':0}, ignore_index=True)
         plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
         for name, group in plot_group:
             group.plot(x='nodes', y=y_axis, label=name, ax=ax)
@@ -473,8 +469,8 @@ def plot_data_pareto(df):
                                                          colormap='cool',
                                                          c=color)
         axs[2].set(xlabel='Space', ylabel='Deviation', title=f'Space / Time for {algo}')
-        plot_group[plot_group.algo == algo].plot.scatter(x='space',
-                                                         y='time',
+        plot_group[plot_group.algo == algo].plot.scatter(x='time',
+                                                         y='space',
                                                          ax=axs[2],
                                                          colormap='cool',
                                                          c=color)
@@ -486,15 +482,15 @@ def plot_data_timeout(df):
     plot_group = df.groupby(['algo', 'timeout'], as_index=False).mean()
     for algo in plot_group['algo'].unique():
         fig, axs = plt.subplots(1, 3, figsize=(10, 3))
-        axs[0].set(xlabel='Timeout', ylabel='Space', title='Space / TImeout Relation')
+        axs[0].set(xlabel='Timeout', ylabel='Space', title='Space / Timeout Relation')
         plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
                                                          y='space',
                                                          ax=axs[0])
-        axs[1].set(xlabel='Timeout', ylabel='Time', title='Time / TImeout Relation')
+        axs[1].set(xlabel='Timeout', ylabel='Time', title='Time / Timeout Relation')
         plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
                                                          y='time',
                                                          ax=axs[1])
-        axs[2].set(xlabel='Timeout', ylabel='Deviation', title='Deviation / TImeout Relation')
+        axs[2].set(xlabel='Timeout', ylabel='Deviation', title='Deviation / Timeout Relation')
         plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
                                                          y='deviation',
                                                          ax=axs[2])
