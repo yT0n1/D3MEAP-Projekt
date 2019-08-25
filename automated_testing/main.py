@@ -28,8 +28,8 @@ max_queries = 5
 num_workloads = 3
 
 # Configuration Node Count
-NODES_min_nodes = 2
-NODES_max_nodes = 3
+NODES_min_nodes = 11
+NODES_max_nodes = 12
 NODES_timeout = 10
 NODES_epsilon_factor = 400000
 

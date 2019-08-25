@@ -114,7 +114,10 @@ def test_with_nodes(problems, min_nodes, max_nodes, timeout, should_squeeze, eps
                 # The name is split due to the very verbose and varying naming for prime trees
                 df.loc[len(df)] = [node_count, res.name.split('|')[0], res.time, res.space,
                                    res.deviation, res.total_replication]
-                dot_export_actual_workload(res.tree)
+                try:
+                    dot_export_actual_workload(res.tree)
+                except:
+                    print("No Graph Libary found, will not print trees")
 
             epoch_results.append(xx_results)
         total_results.append(epoch_results)
