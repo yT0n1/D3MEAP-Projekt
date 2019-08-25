@@ -9,7 +9,7 @@ The project was programmed in Python 3. The needed libaries are listed within th
 Moreover, if you want to see your trees being printed, you also have to install:
 https://www.graphviz.org/
 
-Guriobi solver with an academic license.
+The Guriobi solver with an academic license is also necessary.
 
 ## Code Structure
 
@@ -65,15 +65,19 @@ These tests evaluate how much each problem parameter effects the run-time of our
 #### Files
 
 **main.py:**
+
 Here you should select the testing algorithms you are interested in and run the application. Moreover, there are also extensive parameters availabe for selecting the problem and tuning the testing parameters.
 
 **plotting_functions.py**
+
 A collection of plotting functions used for the different testing algorithms.
 
 **problem_generation.py**
+
 A file containing code dealing with problems. Generation and methods interacting with them.
 
 **testing_algorithms.py**
+
 A collection of the different testing algorithms. Go here if you want to adapt or change any of them.
 
 #### Output Files
@@ -85,15 +89,19 @@ This package contains the core functionality, like the LP definition or differen
 #### Files
 
 **observation.py:**
+
 Contains the observation class. A class used to save the results from a run.
 
 **solver_node.py:**
+
 Contains the main logic of the program. This includes the LP-problem definition and the methods needed to solve it.
 
 **tree_generation.py:**
+
 Here we define the different splitting stragegies. These heuristics are then evaluated in the automated testing.
 
 **utils.py:**
+
 Various methods including many debugging related printing functions. You can enable these by commenting them in within the solver_node.py file.
 
 ### Documentation
