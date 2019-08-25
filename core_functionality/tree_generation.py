@@ -130,8 +130,11 @@ def dot_export_actual_workload(root: SolverNode, name_appendix=''):
             has = "-"
         return 'label="' + should + ' | ' + has + '"'
 
+    file_name = "tree_images/" + root.name + name_appendix + ".png"
+    file_name = file_name.replace("|", "_")
+
     DotExporter(root, nodeattrfunc=design_node,
-                edgeattrfunc=label_split).to_picture(root.name + name_appendix + ".png")
+                edgeattrfunc=label_split).to_picture(file_name)
 
 def dot_export_ideal_workload(root: SolverNode, name_appendix=''):
     def label_split(node, child):

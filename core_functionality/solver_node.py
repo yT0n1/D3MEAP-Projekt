@@ -1,9 +1,10 @@
 import copy
 import time
 
-import pulp.solvers
-from anytree import Node, LevelOrderIter
 from pulp import *
+
+from anytree import Node, LevelOrderIter
+from pulp import solvers
 
 from core_functionality.observation import Observation
 from core_functionality.utils import print_workload, derivation_from_worksplit
@@ -122,10 +123,10 @@ def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_q
     problem = nb_4(problem)
 
     if not first_solution:
-        solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
+        solver = solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
                                                   ("OutputFlag", 0)])
     else:
-        solver = pulp.solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
+        solver = solvers.GUROBI_CMD(options=[('TimeLimit', timeout_sec), ("TuneOutput", 0),
                                                   ("OutputFlag", 0), ("SolutionLimit", 1)])
     solver.actualSolve(problem)
     #problem.solve(PULP_CBC_CMD(maxSeconds=timeout_sec, threads=4))
