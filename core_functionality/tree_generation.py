@@ -7,7 +7,7 @@ from anytree import LevelOrderIter, RenderTree, DoubleStyle
 from anytree.exporter import DotExporter
 from sympy.ntheory import factorint
 
-from solver_node import SolverNode
+from core_functionality.solver_node import SolverNode
 
 
 def add_split_ratios(root: SolverNode):

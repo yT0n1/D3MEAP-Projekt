@@ -1,117 +1,15 @@
 import os
-import random
 import sys
 from datetime import datetime
 
-import math
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from playground import Problem
-from solver_node import solve_for_tree
-from tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree, \
+from automated_testing.problem_generation import add_problem_properties
+from core_functionality.solver_node import solve_for_tree
+from core_functionality.tree_generation import one_split_tree, one_vs_all_split, approximate_tree, prime_factor_tree, \
     dot_export_actual_workload
-
-mpl.rcParams['figure.dpi'] = 400
-
-
-def generate_queries(num_queries, num_fragments):
-    queries = []
-    used = [0] * num_fragments
-    for q in range(num_queries - 1):
-        nr_frag = np.random.binomial(num_fragments - 1, 0.3) + 1
-        chosen_fragments = np.random.choice(num_fragments, nr_frag, replace=False)
-        for fragment in chosen_fragments:
-            used[fragment] = 1
-        queries.append([1 if i in chosen_fragments else 0 for i in range(num_fragments)])
-    used[0] = 0  # to avoid empty
-    queries.append([0 if u else 1 for u in used])
-    return queries
-
-
-def automated_test():
-    # df = runtime_increasing_factors()
-    # exit()
-    # What do you want to test?
-    test_node_count = False
-    test_pareto = False
-    test_timeout = False
-    compare_lp_heuristic = True
-
-    # General Configuration for the Problems
-    num_problems = 3
-    min_fragments = 20
-    max_fragments = 50
-    min_queries = 5
-    max_queries = 10
-    num_workloads = 3
-
-    # Configuration Node Count
-    NODES_min_nodes = 2
-    NODES_max_nodes = 10
-    NODES_timeout = 15
-    NODES_should_squeeze = False
-    NODES_epsilon_factor = 400000
-
-    # Configuration Pareto Frontier
-    PARETO_selected_node_count = 12
-    PARETO_timeout = 15
-    PARETO_epsilon_factor_array = [10, 100, 1000, 3000, 5000, 7500, 10000, 500000, 1000000]
-
-    # Configuration Timeout Behaviour
-    TIMEOUT_selected_node_count = 12
-    TIMEOUT_maximum_timeout = 10
-    TIMEOUT_should_squeeze = False
-    TIMEOUT_epsilon_factor = 10000
-
-    problems = generate_problems(num_problems, min_fragments, max_fragments, min_queries,
-                                 max_queries, num_workloads)
-    df = None
-
-    if test_node_count:
-        total_results, df = test_with_nodes(problems,
-                                            NODES_min_nodes,
-                                            NODES_max_nodes,
-                                            NODES_timeout,
-                                            NODES_should_squeeze,
-                                            NODES_epsilon_factor)
-        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems, NODES_should_squeeze)
-        df.to_csv("test_node_out_NOEP.csv")
-        total_results, df = test_with_nodes(problems,
-                                            NODES_min_nodes,
-                                            NODES_max_nodes,
-                                            NODES_timeout,
-                                            not NODES_should_squeeze,
-                                            NODES_epsilon_factor)
-        plot_data(df, NODES_min_nodes, NODES_max_nodes, problems, not NODES_should_squeeze)
-        df.to_csv("test_node_out_EP.csv")
-    if test_pareto:
-        pareto_results, df = epsilon_pareto_front(problems,
-                                                  PARETO_selected_node_count,
-                                                  PARETO_timeout,
-                                                  PARETO_epsilon_factor_array)
-        plot_data_pareto(df)
-        df.to_csv("data_pareto_out.csv")
-    if test_timeout:
-        timeout_results, df = timeout_tests(problems,
-                                            TIMEOUT_selected_node_count,
-                                            TIMEOUT_maximum_timeout,
-                                            TIMEOUT_should_squeeze,
-                                            TIMEOUT_epsilon_factor)
-        plot_data_timeout(df)
-        df.to_csv("test_timeout_out.csv")
-    if compare_lp_heuristic:
-        compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
-                                                     False)
-        df.to_csv("test_heu_out_nosqueez.csv")
-        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems, False)
-
-        compare_res, df = timeout_vs_heuristic_tests(problems, NODES_min_nodes, NODES_max_nodes,
-                                                     True, NODES_epsilon_factor)
-        df.to_csv("test_heu_out_squeez.csv")
-        plot_heu_vs_opt(df, NODES_min_nodes, NODES_max_nodes, problems, True)
 
 
 def runtime_increasing_factors():
@@ -270,6 +168,8 @@ def epsilon_pareto_front(problems, selected_node_count, timeout, epsilon_factor_
                                    res.deviation]
                 # dot_export_actual_workload(res.tree)
 
+            # for xx_r in xx_results:
+            # dot_export_actual_workload(xx_r.tree)
             epoch_results.append(xx_results)
         total_results.append(epoch_results)
     # unfortunately we have to enforce the column types manually or some will be object which
@@ -373,143 +273,3 @@ def timeout_tests(problems, selected_node_count, maximum_timeout, should_squeeze
     df.space = df.space.astype('int')
     df.deviation = df.deviation.astype('float')
     return total_results, df
-
-
-def generate_problems(num_epochs, min_fragments, max_fragments, min_queries, max_queries,
-                      num_workloads):
-    problems = []
-    for epoch in range(num_epochs):
-        param_num_fragments = random.sample(range(min_fragments, max_fragments), 1)[0]
-        param_num_queries = random.sample(range(min_queries, max_queries), 1)[0]
-
-        problem = add_problem_properties(param_num_fragments, param_num_queries, num_workloads)
-
-        problems.append(problem)
-    return problems
-
-
-def add_problem_properties(param_num_fragments, param_num_queries, workloads):
-    param_fragment_size = random.choices(range(1, 3000), k=param_num_fragments)
-    param_queries = generate_queries(param_num_queries, param_num_fragments)
-    param_query_frequency = [random.choices(range(1, 100), k=param_num_queries)
-                             for _ in range(workloads)]
-    param_query_cost = random.choices(range(1, 100), k=param_num_queries)
-    param_query_ids = [i for i in range(len(param_query_cost))]
-    problem = Problem(param_fragment_size, param_queries,
-                      param_query_frequency, param_query_cost, param_query_ids,
-                      len(param_query_ids))
-    return problem
-
-
-def plot_data(df, min_nodes, max_nodes, problems, squeezed):
-    problem_hardness = []
-    for problem in problems:
-        problem_hardness.append(sum(problem.param_fragment_size))
-    avg_problem_hardness = np.mean(problem_hardness)
-    y_axises = ['time', 'deviation', 'space']
-    for y_axis in y_axises:
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
-        if y_axis == 'space':
-            for node_count in range(min_nodes,max_nodes+1):
-                df = df.append({'algo':'Total Replication', 'space':(avg_problem_hardness*node_count), 'nodes':node_count, 'time':0, 'deviation':0, 'total_replication':0}, ignore_index=True)
-        plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
-        for name, group in plot_group:
-            group.plot(x='nodes', y=y_axis, label=name, ax=ax)
-        plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
-        plt.show()
-    df = df[df.algo != "Total Replication"]
-    deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
-    deviation = deviation.drop(columns=['nodes'])
-    if squeezed:
-        deviation = deviation.drop(columns=['deviation'])
-    fig, ax = plt.subplots()
-    deviation.plot.bar(ax=ax)
-    ax.set(xlabel='Split Strategies', ylabel='%',
-           title='%-Deviation from optimum Complete Split Strategy')
-    plt.show()
-
-
-def plot_heu_vs_opt(df, min_nodes, max_nodes, problems, squeezes):
-    problem_hardness = []
-    for problem in problems:
-        problem_hardness.append(sum(problem.param_fragment_size))
-    avg_problem_hardness = np.mean(problem_hardness)
-    y_axises = ['time', 'deviation', 'space']
-    for y_axis in y_axises:
-        fig, ax = plt.subplots()
-        ax.set(xlabel='Node Count', ylabel=y_axis, title=f'Average {y_axis} per node count')
-        if y_axis == 'space':
-            for node_count in range(min_nodes, max_nodes + 1):
-                df = df.append(
-                    {'algo': 'Total Replication', 'space': (avg_problem_hardness * node_count),
-                     'nodes': node_count, 'time': 0, 'deviation': 0, 'total_replication': 0},
-                    ignore_index=True)
-        plot_group = df.groupby(['algo', 'nodes'], as_index=False)[y_axis].mean().groupby('algo')
-        for name, group in plot_group:
-            group.plot(x='nodes', y=y_axis, label=name, ax=ax)
-        plt.xticks([i for i in range(min_nodes, max_nodes + 1)])
-        plt.show()
-    df = df[df.algo != "Total Replication"]
-    deviation = ((df.groupby('algo').mean() / df.groupby('algo').mean().loc['Complete']) - 1) * 100
-    deviation = deviation.drop(index=['Complete'])
-    deviation = deviation.drop(columns=['nodes', 'total_replication'])
-    if not squeezes:
-        deviation = deviation.drop(columns=[ 'deviation'])
-
-    fig, ax = plt.subplots()
-    deviation.plot.bar(ax=ax)
-    ax.set(xlabel='Split Strategies', ylabel='%',
-           title='%-Difference from optimum complete split')
-    plt.show()
-
-
-def plot_data_pareto(df):
-    plot_group = df.groupby(['algo', 'epsilon'], as_index=False).mean()
-    for algo in plot_group['algo'].unique():
-        fig, axs = plt.subplots(1, 3, figsize=(10, 3))
-        axs[0].set(xlabel='Space', ylabel='Deviation', title=f'Space / Deviation for {algo}')
-        color = plot_group[plot_group.algo == algo]['epsilon'].apply(lambda x: math.log(x, 10))
-        plot_group[plot_group.algo == algo].plot.scatter(x='space',
-                                                         y='deviation',
-                                                         ax=axs[0],
-                                                         colormap='cool',
-                                                         c=color)
-        axs[1].set(xlabel='Space', ylabel='Deviation', title=f'Time / Deviation for {algo}')
-        plot_group[plot_group.algo == algo].plot.scatter(x='time',
-                                                         y='deviation',
-                                                         ax=axs[1],
-                                                         colormap='cool',
-                                                         c=color)
-        axs[2].set(xlabel='Space', ylabel='Deviation', title=f'Space / Time for {algo}')
-        plot_group[plot_group.algo == algo].plot.scatter(x='time',
-                                                         y='space',
-                                                         ax=axs[2],
-                                                         colormap='cool',
-                                                         c=color)
-        plt.tight_layout()
-        plt.show()
-
-
-def plot_data_timeout(df):
-    plot_group = df.groupby(['algo', 'timeout'], as_index=False).mean()
-    for algo in plot_group['algo'].unique():
-        fig, axs = plt.subplots(1, 3, figsize=(10, 3))
-        axs[0].set(xlabel='Timeout', ylabel='Space', title='Space / Timeout Relation')
-        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
-                                                         y='space',
-                                                         ax=axs[0])
-        axs[1].set(xlabel='Timeout', ylabel='Time', title='Time / Timeout Relation')
-        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
-                                                         y='time',
-                                                         ax=axs[1])
-        axs[2].set(xlabel='Timeout', ylabel='Deviation', title='Deviation / Timeout Relation')
-        plot_group[plot_group.algo == algo].plot.scatter(x='timeout',
-                                                         y='deviation',
-                                                         ax=axs[2])
-        plt.tight_layout()
-        plt.show()
-
-
-if __name__ == '__main__':
-    automated_test()

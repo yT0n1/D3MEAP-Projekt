@@ -1,13 +1,12 @@
 import copy
 import time
 
-from pulp import *
 import pulp.solvers
-
 from anytree import Node, LevelOrderIter
+from pulp import *
 
-from observation import Observation
-from utils import print_location, print_location_adaptive, print_workload, derivation_from_worksplit
+from core_functionality.observation import Observation
+from core_functionality.utils import print_workload, derivation_from_worksplit
 
 
 def solve_split_adaptive(param_fragment_sizes, param_query_compositions, param_query_frequencies,
@@ -251,3 +250,4 @@ def solve_for_tree(tree_root, problem, timeout, should_squeeze, epsilon_factor,
     aborted = runtime >= timeout if timeout else False
     return Observation(sum(total_space), end - start, tree_root, aborted,
                        total_deviation, tree_root.name, tree_root.total_replication)
+

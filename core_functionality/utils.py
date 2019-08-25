@@ -1,6 +1,5 @@
 import random
 
-
 def generate_queries(param_num_queries, param_num_fragments):
     queries = []
     for i in range(param_num_queries):
