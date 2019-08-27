@@ -14,7 +14,7 @@ The Guriobi solver with an academic license is also necessary.
 ## Code Structure
 
 ### AMPL
-One can find our AMPL implementation in this directory
+One can find our AMPL implementation in this directory. These files are not used anymore and stand more as a standalone project. We decided to include them here for completness reasons.
 
 ### Automated Testing
 This package include the files which are used to evaluate our approach on desired parameters.
